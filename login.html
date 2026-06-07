@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ডিলার ভাই — লগইন</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0a0f1e;
+    --card:#111827;
+    --border:#1e2d45;
+    --blue:#3b82f6;
+    --cyan:#06b6d4;
+    --green:#10b981;
+    --text:#f1f5f9;
+    --t2:#94a3b8;
+    --t3:#475569;
+    --red:#ef4444;
+    --gold:#f59e0b;
+  }
+  body{
+    font-family:'Hind Siliguri',sans-serif;
+    background:var(--bg);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    position:relative;
+    overflow:hidden;
+  }
+  /* Background effects */
+  body::before{
+    content:'';
+    position:fixed;
+    top:-200px;left:-200px;
+    width:600px;height:600px;
+    background:radial-gradient(circle,rgba(59,130,246,.15) 0%,transparent 70%);
+    pointer-events:none;
+  }
+  body::after{
+    content:'';
+    position:fixed;
+    bottom:-200px;right:-200px;
+    width:600px;height:600px;
+    background:radial-gradient(circle,rgba(6,182,212,.1) 0%,transparent 70%);
+    pointer-events:none;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:36px 28px;
+    width:100%;
+    max-width:420px;
+    box-shadow:0 25px 60px rgba(0,0,0,.5);
+    animation:fadeUp .4s ease;
+    position:relative;
+    z-index:1;
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+  .logo{
+    text-align:center;
+    margin-bottom:28px;
+  }
+  .logo-icon{
+    width:60px;height:60px;
+    background:linear-gradient(135deg,var(--blue),var(--cyan));
+    border-radius:16px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+    margin-bottom:12px;
+    box-shadow:0 8px 24px rgba(59,130,246,.4);
+  }
+  .logo h1{
+    font-size:24px;
+    font-weight:700;
+    color:var(--text);
+    line-height:1.2;
+  }
+  .logo p{
+    font-size:13px;
+    color:var(--t2);
+    margin-top:4px;
+  }
+
+  /* Tabs */
+  .tabs{
+    display:flex;
+    background:rgba(255,255,255,.05);
+    border-radius:10px;
+    padding:4px;
+    margin-bottom:24px;
+  }
+  .tab{
+    flex:1;
+    padding:9px;
+    text-align:center;
+    font-size:14px;
+    font-weight:600;
+    color:var(--t2);
+    border-radius:7px;
+    cursor:pointer;
+    transition:all .2s;
+    font-family:'Hind Siliguri',sans-serif;
+    border:none;
+    background:none;
+  }
+  .tab.active{
+    background:var(--blue);
+    color:#fff;
+    box-shadow:0 4px 12px rgba(59,130,246,.4);
+  }
+
+  .fg{margin-bottom:16px}
+  .fg label{
+    display:block;
+    font-size:13px;
+    color:var(--t2);
+    margin-bottom:6px;
+    font-weight:500;
+  }
+  .fg input{
+    width:100%;
+    padding:11px 14px;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--border);
+    border-radius:10px;
+    color:var(--text);
+    font-size:15px;
+    font-family:'Hind Siliguri',sans-serif;
+    outline:none;
+    transition:border-color .2s;
+  }
+  .fg input:focus{border-color:var(--blue)}
+  .fg input::placeholder{color:var(--t3)}
+
+  .btn{
+    width:100%;
+    padding:13px;
+    border-radius:10px;
+    font-size:16px;
+    font-weight:600;
+    font-family:'Hind Siliguri',sans-serif;
+    cursor:pointer;
+    border:none;
+    transition:all .2s;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,var(--blue),var(--cyan));
+    color:#fff;
+    box-shadow:0 4px 16px rgba(59,130,246,.4);
+    margin-bottom:12px;
+  }
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,130,246,.5)}
+  .btn-primary:active{transform:translateY(0)}
+  .btn-google{
+    background:rgba(255,255,255,.07);
+    border:1px solid var(--border);
+    color:var(--text);
+  }
+  .btn-google:hover{background:rgba(255,255,255,.12)}
+
+  .divider{
+    text-align:center;
+    color:var(--t3);
+    font-size:13px;
+    margin:16px 0;
+    position:relative;
+  }
+  .divider::before,.divider::after{
+    content:'';
+    position:absolute;
+    top:50%;
+    width:42%;
+    height:1px;
+    background:var(--border);
+  }
+  .divider::before{left:0}
+  .divider::after{right:0}
+
+  .msg{
+    padding:10px 14px;
+    border-radius:8px;
+    font-size:13px;
+    margin-bottom:14px;
+    display:none;
+  }
+  .msg.error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+  .msg.success{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#6ee7b7}
+  .msg.show{display:block}
+
+  /* Loading */
+  .spinner{
+    width:20px;height:20px;
+    border:2px solid rgba(255,255,255,.3);
+    border-top-color:#fff;
+    border-radius:50%;
+    animation:spin .7s linear infinite;
+    display:none;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Overlay loader */
+  #loader{
+    position:fixed;inset:0;
+    background:rgba(10,15,30,.85);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+    flex-direction:column;
+    gap:16px;
+  }
+  #loader.show{display:flex}
+  .loader-ring{
+    width:50px;height:50px;
+    border:3px solid var(--border);
+    border-top-color:var(--blue);
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+  }
+  #loader p{color:var(--t2);font-size:14px}
+
+  .forgot{
+    text-align:right;
+    margin-top:-8px;
+    margin-bottom:16px;
+  }
+  .forgot a{
+    color:var(--blue);
+    font-size:12px;
+    text-decoration:none;
+    cursor:pointer;
+  }
+
+  .terms{
+    font-size:12px;
+    color:var(--t3);
+    text-align:center;
+    margin-top:16px;
+    line-height:1.6;
+  }
+
+  /* Role badge */
+  .role-info{
+    background:rgba(6,182,212,.08);
+    border:1px solid rgba(6,182,212,.2);
+    border-radius:8px;
+    padding:10px 14px;
+    font-size:12px;
+    color:var(--t2);
+    margin-bottom:16px;
+    line-height:1.7;
+  }
+  .role-info b{color:var(--cyan)}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-ring"></div>
+  <p>অপেক্ষা করুন...</p>
+</div>
+
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">🏪</div>
+    <h1>ডিলার ভাই</h1>
+    <p>ডিলারশিপ ম্যানেজমেন্ট সিস্টেম</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('login')">লগইন</button>
+    <button class="tab" onclick="switchTab('register')">নিবন্ধন</button>
+  </div>
+
+  <div id="msg" class="msg"></div>
+
+  <!-- Login Form -->
+  <div id="login-form">
+    <div class="fg">
+      <label>ইমেইল</label>
+      <input type="email" id="l-email" placeholder="আপনার ইমেইল">
+    </div>
+    <div class="fg">
+      <label>পাসওয়ার্ড</label>
+      <input type="password" id="l-pass" placeholder="পাসওয়ার্ড" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="forgot"><a onclick="doForgot()">পাসওয়ার্ড ভুলে গেছেন?</a></div>
+    <button class="btn btn-primary" onclick="doLogin()">
+      <span id="l-txt">লগইন করুন</span>
+      <div class="spinner" id="l-spin"></div>
+    </button>
+    <div class="divider">অথবা</div>
+    <button class="btn btn-google" onclick="doGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">
+      Google দিয়ে লগইন
+    </button>
+  </div>
+
+  <!-- Register Form -->
+  <div id="register-form" style="display:none">
+    <div class="role-info">
+      নিবন্ধন করলে আপনি <b>Admin</b> হিসেবে যোগ দেবেন। SR ও Delivery Man যোগ করবেন Admin panel থেকে।
+    </div>
+    <div class="fg">
+      <label>ব্যবসার নাম</label>
+      <input type="text" id="r-biz" placeholder="যেমন: রহমান ট্রেডার্স">
+    </div>
+    <div class="fg">
+      <label>আপনার নাম</label>
+      <input type="text" id="r-name" placeholder="আপনার পূর্ণ নাম">
+    </div>
+    <div class="fg">
+      <label>ইমেইল</label>
+      <input type="email" id="r-email" placeholder="আপনার ইমেইল">
+    </div>
+    <div class="fg">
+      <label>পাসওয়ার্ড</label>
+      <input type="password" id="r-pass" placeholder="কমপক্ষে ৬ অক্ষর">
+    </div>
+    <button class="btn btn-primary" onclick="doRegister()">
+      <span id="r-txt">অ্যাকাউন্ট তৈরি করুন</span>
+      <div class="spinner" id="r-spin"></div>
+    </button>
+    <div class="divider">অথবা</div>
+    <button class="btn btn-google" onclick="doGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">
+      Google দিয়ে নিবন্ধন
+    </button>
+    <p class="terms">নিবন্ধন করে আপনি আমাদের সেবার শর্তাবলী মেনে নিচ্ছেন</p>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+         GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail,
+         onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
+         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCP2RmMbWM43H6w_7_6YKtD5bXkoCoKTTw",
+  authDomain: "dealer-vai.firebaseapp.com",
+  projectId: "dealer-vai",
+  storageBucket: "dealer-vai.firebasestorage.app",
+  messagingSenderId: "305454773026",
+  appId: "1:305454773026:web:901bd16600518cf4172b7b"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// ── Helpers ──
+function showLoader(){ document.getElementById('loader').classList.add('show') }
+function hideLoader(){ document.getElementById('loader').classList.remove('show') }
+function showMsg(txt, type='error'){
+  const el = document.getElementById('msg');
+  el.textContent = txt;
+  el.className = `msg ${type} show`;
+}
+function hideMsg(){ document.getElementById('msg').className='msg' }
+function setLoading(form, on){
+  document.getElementById(form+'-txt').style.display = on?'none':'';
+  document.getElementById(form+'-spin').style.display = on?'block':'none';
+}
+
+// ── Tab switch ──
+window.switchTab = (tab) => {
+  hideMsg();
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===(tab==='login'?0:1)));
+  document.getElementById('login-form').style.display    = tab==='login'?'':'none';
+  document.getElementById('register-form').style.display = tab==='register'?'':'none';
+};
+
+// ── Redirect by role ──
+async function redirectUser(uid){
+  try{
+    const snap = await getDoc(doc(db,'users',uid));
+    if(snap.exists()){
+      const role = snap.data().role || 'admin';
+      hideLoader();
+      if(role==='sr')         location.href='sr-portal.html';
+      else if(role==='delivery') location.href='delivery-portal.html';
+      else                    location.href='admin-portal.html';
+    } else {
+      hideLoader();
+      location.href='admin-portal.html';
+    }
+  } catch(e){
+    hideLoader();
+    location.href='admin-portal.html';
+  }
+}
+
+// ── Auto-login check ──
+onAuthStateChanged(auth, user => {
+  if(user){
+    showLoader();
+    redirectUser(user.uid);
+  }
+});
+
+// ── Login ──
+window.doLogin = async () => {
+  hideMsg();
+  const email = document.getElementById('l-email').value.trim();
+  const pass  = document.getElementById('l-pass').value;
+  if(!email||!pass){ showMsg('ইমেইল ও পাসওয়ার্ড দিন'); return; }
+  setLoading('l',true);
+  try{
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    showLoader();
+    await redirectUser(cred.user.uid);
+  } catch(e){
+    setLoading('l',false);
+    const msgs = {
+      'auth/user-not-found':'এই ইমেইলে কোনো অ্যাকাউন্ট নেই',
+      'auth/wrong-password':'পাসওয়ার্ড ভুল',
+      'auth/invalid-credential':'ইমেইল বা পাসওয়ার্ড ভুল',
+      'auth/too-many-requests':'অনেকবার চেষ্টা হয়েছে, কিছুক্ষণ পর আবার চেষ্টা করুন'
+    };
+    showMsg(msgs[e.code]||'লগইন ব্যর্থ হয়েছে');
+  }
+};
+
+// ── Register ──
+window.doRegister = async () => {
+  hideMsg();
+  const biz   = document.getElementById('r-biz').value.trim();
+  const name  = document.getElementById('r-name').value.trim();
+  const email = document.getElementById('r-email').value.trim();
+  const pass  = document.getElementById('r-pass').value;
+  if(!biz)  { showMsg('ব্যবসার নাম দিন'); return; }
+  if(!name) { showMsg('আপনার নাম দিন'); return; }
+  if(!email){ showMsg('ইমেইল দিন'); return; }
+  if(pass.length<6){ showMsg('পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে'); return; }
+  setLoading('r',true);
+  try{
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    // Firestore এ user data সেভ করো
+    await setDoc(doc(db,'users',cred.user.uid),{
+      name, email, businessName: biz,
+      role: 'admin',
+      plan: 'trial',
+      trialEnds: new Date(Date.now()+14*24*60*60*1000).toISOString(),
+      createdAt: serverTimestamp()
+    });
+    showLoader();
+    location.href='admin-portal.html';
+  } catch(e){
+    setLoading('r',false);
+    const msgs = {
+      'auth/email-already-in-use':'এই ইমেইলে আগেই অ্যাকাউন্ট আছে',
+      'auth/invalid-email':'ইমেইল সঠিক নয়',
+      'auth/weak-password':'পাসওয়ার্ড দুর্বল'
+    };
+    showMsg(msgs[e.code]||'নিবন্ধন ব্যর্থ হয়েছে');
+  }
+};
+
+// ── Google ──
+window.doGoogle = async () => {
+  hideMsg();
+  const provider = new GoogleAuthProvider();
+  try{
+    const cred = await signInWithPopup(auth, provider);
+    showLoader();
+    const snap = await getDoc(doc(db,'users',cred.user.uid));
+    if(!snap.exists()){
+      await setDoc(doc(db,'users',cred.user.uid),{
+        name: cred.user.displayName||'',
+        email: cred.user.email||'',
+        businessName: '',
+        role: 'admin',
+        plan: 'trial',
+        trialEnds: new Date(Date.now()+14*24*60*60*1000).toISOString(),
+        createdAt: serverTimestamp()
+      });
+    }
+    await redirectUser(cred.user.uid);
+  } catch(e){
+    hideLoader();
+    if(e.code!=='auth/popup-closed-by-user')
+      showMsg('Google লগইন ব্যর্থ হয়েছে');
+  }
+};
+
+// ── Forgot password ──
+window.doForgot = async () => {
+  const email = document.getElementById('l-email').value.trim();
+  if(!email){ showMsg('আগে ইমেইল দিন'); return; }
+  try{
+    await sendPasswordResetEmail(auth, email);
+    showMsg('পাসওয়ার্ড রিসেট লিংক ইমেইলে পাঠানো হয়েছে','success');
+  } catch(e){
+    showMsg('ইমেইল পাওয়া যায়নি');
+  }
+};
+</script>
+</body>
+</html>
