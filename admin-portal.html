@@ -62,7 +62,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--text);font-family:'Hind Siliguri',sans-serif;display:flex;flex-direction:row}
+body{background:var(--bg);color:var(--text);font-family:'Hind Siliguri',sans-serif;display:flex;flex-direction:column}
 
 /* ── SIDEBAR (Hamburger Overlay) ── */
 #sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:98;backdrop-filter:blur(3px)}
@@ -308,6 +308,7 @@ tfoot td{padding:9px 13px;font-size:19px;font-weight:700;background:rgba(96,165,
   .g3,.g4{grid-template-columns:1fr 1fr}
   .two{grid-template-columns:1fr}
   .tb-right .today-tag{display:none}
+  #theme-btn{display:none} /* মোবাইলে টপবারে জায়গা কম — থিম বাটন প্রোফাইল ড্রপডাউনে আছে */
   th{font-size:13px;padding:7px 10px}
   td{font-size:16px;padding:8px 10px}
   tfoot td{font-size:16px;padding:7px 10px}
@@ -571,6 +572,7 @@ tfoot td{padding:9px 13px;font-size:19px;font-weight:700;background:rgba(96,165,
 .ops-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0;padding:4px 8px 8px}
 .ops-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;margin:4px 4px 0;background:var(--s2);border:1px solid var(--border);border-radius:8px;gap:8px}
 .ops-name{font-size:15px;color:var(--t2);flex:1;line-height:1.3}
+.ops-name-struck{text-decoration:line-through;text-decoration-color:var(--t3);text-decoration-thickness:2px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .ops-qty{font-size:19px;font-weight:800;color:var(--blue);white-space:nowrap}
 .ops-unit{font-size:14px;color:var(--t3);margin-left:2px}
 
@@ -824,6 +826,77 @@ tfoot td{padding:9px 13px;font-size:19px;font-weight:700;background:rgba(96,165,
 #track-map .leaflet-control-container .leaflet-top,
 #track-map .leaflet-control-container .leaflet-bottom{z-index:auto}
 </style>
+
+<!-- ══════════ প্রোফাইল ড্রপডাউন: প্রোফাইল/রিচার্জ/SMS/সাবস্ক্রিপশন ══════════ -->
+<style>
+#profile-wrap{position:relative;display:inline-block}
+.tb-avatar-btn{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));border:2px solid var(--border);color:#fff;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;padding:0;transition:border-color .2s}
+.tb-avatar-btn:hover{border-color:var(--blue)}
+.tb-avatar-btn img{width:100%;height:100%;object-fit:cover}
+#profile-dropdown{display:none;position:absolute;top:calc(100% + 8px);right:0;width:280px;background:var(--s1);border:1px solid var(--border2);border-radius:14px;box-shadow:var(--shadow);z-index:9000;overflow:hidden}
+.pd-header{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--s2);border-bottom:1px solid var(--border)}
+.pd-header-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;font-size:17px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.pd-header-avatar img{width:100%;height:100%;object-fit:cover}
+.pd-header-info{flex:1;min-width:0}
+.pd-header-name{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.pd-header-email{font-size:12px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pd-body{padding:6px}
+.pd-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;cursor:pointer;color:var(--text);font-size:15px;transition:background .15s}
+.pd-item:hover{background:var(--s2)}
+.pd-item .ic{font-size:17px;width:20px;text-align:center;flex-shrink:0}
+.pd-item .lbl{flex:1}
+.pd-item .badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;flex-shrink:0}
+.pd-item .badge.bal{background:rgba(74,222,128,.15);color:var(--green)}
+.pd-item .badge.sub{background:rgba(192,132,252,.15);color:var(--purple)}
+.pd-divider{height:1px;background:var(--border);margin:5px 8px}
+.pd-foot{padding:6px 8px}
+.pd-foot-btn{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--t2);border-radius:8px;padding:8px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:14px;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .2s}
+.pd-foot-btn:hover{border-color:var(--blue);color:var(--blue)}
+.pd-logout-btn{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.25);margin-top:6px}
+.pd-logout-btn:hover{background:rgba(239,68,68,.18);border-color:#f87171;color:#f87171}
+.pd-big-balance{font-size:36px;font-weight:800;color:var(--green);text-align:center;margin:4px 0 10px}
+.pd-quick-amt{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:4px 0 14px}
+.pd-quick-amt button{background:var(--s2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 4px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:14px;font-weight:700;transition:all .2s}
+.pd-quick-amt button:hover{border-color:var(--blue);background:rgba(96,165,250,.1);color:var(--blue)}
+.pd-plan-card{border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .2s}
+.pd-plan-card:hover{border-color:var(--border2)}
+.pd-plan-card.active{border-color:var(--blue);background:rgba(96,165,250,.06)}
+.pd-plan-name{font-size:17px;font-weight:800;display:flex;align-items:center;justify-content:space-between;color:var(--text)}
+.pd-plan-price{font-size:14px;color:var(--t2);margin-top:2px}
+/* ── সাবস্ক্রিপশন প্রাইসিং কার্ড (৩-কলাম) ── */
+.pd-sub-current-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:11px 16px;margin-bottom:18px;font-size:14px;color:var(--t2)}
+.pd-sub-current-bar strong{color:var(--text);font-size:15px}
+.pd-sub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;padding-top:14px}
+.pd-sub-card{position:relative;display:flex;flex-direction:column;border:1px solid var(--border);border-radius:14px;padding:24px 16px 16px;background:var(--s1);transition:border-color .2s;overflow:visible}
+.pd-sub-card.featured{border-color:var(--blue);box-shadow:0 0 0 2px rgba(96,165,250,.12)}
+.pd-sub-card.is-active{border-color:var(--green);box-shadow:0 0 0 2px rgba(74,222,128,.12)}
+.pd-sub-ribbon{position:absolute;top:-13px;left:50%;transform:translateX(-50%);display:inline-block;width:max-content;max-width:90%;box-sizing:border-box;font-size:11.5px;font-weight:700;padding:4px 14px;border-radius:20px;color:#fff;white-space:nowrap;overflow:visible;text-overflow:clip;box-shadow:0 2px 8px rgba(0,0,0,.25);z-index:5;line-height:1.6}
+.pd-sub-ribbon.rec{background:var(--green)}
+.pd-sub-ribbon.pop{background:var(--red)}
+.pd-sub-plan-title{font-size:18px;font-weight:800;text-align:center;margin-top:8px;color:var(--text)}
+.pd-sub-plan-sub{font-size:12px;color:var(--t3);text-align:center;margin-bottom:14px}
+.pd-sub-price-box{background:var(--s2);border-radius:10px;padding:13px 10px;text-align:center;margin-bottom:14px}
+.pd-sub-orig-row{display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:2px}
+.pd-sub-orig{font-size:13px;color:var(--t3);text-decoration:line-through}
+.pd-sub-disc{font-size:10.5px;font-weight:700;background:rgba(248,113,113,.15);color:var(--red);padding:2px 7px;border-radius:20px;white-space:nowrap}
+.pd-sub-final{font-size:27px;font-weight:800;color:var(--blue)}
+.pd-sub-final small{font-size:13px;font-weight:600;color:var(--t2)}
+.pd-sub-features{list-style:none;padding:0;margin:0 0 16px;flex:1}
+.pd-sub-features li{display:flex;align-items:flex-start;gap:7px;font-size:13px;color:var(--t2);padding:4.5px 0}
+.pd-sub-features li .chk{color:var(--green);flex-shrink:0;margin-top:1px;font-weight:800}
+.pd-sub-cta{width:100%;border-radius:9px;padding:10px;font-family:'Hind Siliguri',sans-serif;font-size:14.5px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--s2);color:var(--text);transition:all .2s}
+.pd-sub-cta:hover{border-color:var(--blue);color:var(--blue)}
+.pd-sub-cta.primary{background:linear-gradient(135deg,var(--blue),#1d4ed8);color:#fff;border:none}
+.pd-sub-cta.primary:hover{filter:brightness(1.08);color:#fff}
+.pd-sub-cta:disabled{cursor:default;opacity:.75;border-color:var(--green);color:var(--green);background:rgba(74,222,128,.08)}
+.pd-sub-cta:disabled:hover{filter:none}
+@media(max-width:760px){.pd-sub-grid{grid-template-columns:1fr}}
+.pd-demo-note{font-size:12.5px;color:var(--t3);background:var(--s2);border:1px dashed var(--border);border-radius:8px;padding:8px 10px;margin-top:14px;text-align:center;line-height:1.5}
+.pd-sms-status{font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.pd-sms-status.ok{background:rgba(74,222,128,.15);color:var(--green)}
+.pd-sms-status.fail{background:rgba(248,113,113,.15);color:var(--red)}
+@media(max-width:520px){#profile-dropdown{width:248px;right:-6px}}
+</style>
 </head>
 <body>
 
@@ -831,20 +904,60 @@ tfoot td{padding:9px 13px;font-size:19px;font-weight:700;background:rgba(96,165,
 <div id="loading"><div class="spin"></div><div id="loading-skip" style="display:none;margin-top:16px;text-align:center"><div style="font-size:14px;color:#7a9ab8;margin-bottom:8px">লোড হতে দেরি হচ্ছে...</div><button onclick="bootApp()" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#60a5fa;border-radius:8px;padding:8px 18px;font-family:'Hind Siliguri',sans-serif;font-size:15px;cursor:pointer">⚡ এখনই ওপেন করুন</button></div></div>
 
 <!-- ADMIN LOGIN SCREEN -->
-<div id="admin-login-screen" style="display:none;position:fixed;inset:0;background:#0f1923;z-index:9999;align-items:center;justify-content:center;flex-direction:column;padding:16px">
-  <div style="background:#1a2535;border:1px solid #334d6e;border-radius:16px;padding:30px 26px;width:340px;max-width:100%;position:relative">
+<div id="admin-login-screen" style="display:none;position:fixed;inset:0;background:#0f1923;z-index:9999;align-items:center;justify-content:center;flex-direction:column;padding:16px;overflow-y:auto">
+  <div style="background:#1a2535;border:1px solid #334d6e;border-radius:16px;padding:30px 26px;width:340px;max-width:100%;position:relative;margin:20px 0">
     <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#60a5fa,#22d3ee,#fcd34d);border-radius:16px 16px 0 0"></div>
     <div style="font-size:40px;text-align:center;margin-bottom:7px">🏪</div>
-    <div style="font-size:22px;font-weight:800;text-align:center;color:#f1f5f9">ডিলারশিপ ম্যানেজার</div>
-    <div style="font-size:14px;color:#7a9ab8;text-align:center;margin-top:3px;margin-bottom:22px">অ্যাডমিন প্যানেল</div>
-    <div style="margin-bottom:12px">
-      <label style="display:block;font-size:15px;color:#b8cfe0;margin-bottom:5px;font-weight:600">পাসওয়ার্ড</label>
-      <input type="password" id="admin-pass-input" placeholder="অ্যাডমিন পাসওয়ার্ড দিন"
-        style="width:100%;background:#22314a;border:1px solid #334d6e;border-radius:8px;padding:10px 13px;color:#f1f5f9;font-family:'Hind Siliguri',sans-serif;font-size:18px;outline:none"
-        onkeydown="if(event.key==='Enter')checkAdminLogin()">
+    <div style="font-size:22px;font-weight:800;text-align:center;color:#f1f5f9">Dealer-Vai</div>
+    <div style="font-size:14px;color:#7a9ab8;text-align:center;margin-top:3px;margin-bottom:22px">অ্যাডমিন প্যানেল · dealer-vai.web.app</div>
+
+    <!-- LOGIN FORM -->
+    <div id="login-form-block">
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:15px;color:#b8cfe0;margin-bottom:5px;font-weight:600">ইমেইল</label>
+        <input type="email" id="admin-email-input" placeholder="admin@example.com"
+          style="width:100%;background:#22314a;border:1px solid #334d6e;border-radius:8px;padding:10px 13px;color:#f1f5f9;font-family:'Hind Siliguri',sans-serif;font-size:16px;outline:none;box-sizing:border-box"
+          onkeydown="if(event.key==='Enter')document.getElementById('admin-pass-input').focus()">
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:15px;color:#b8cfe0;margin-bottom:5px;font-weight:600">পাসওয়ার্ড</label>
+        <input type="password" id="admin-pass-input" placeholder="পাসওয়ার্ড দিন"
+          style="width:100%;background:#22314a;border:1px solid #334d6e;border-radius:8px;padding:10px 13px;color:#f1f5f9;font-family:'Hind Siliguri',sans-serif;font-size:18px;outline:none;box-sizing:border-box"
+          onkeydown="if(event.key==='Enter')checkAdminLogin()">
+      </div>
+      <div id="admin-login-err" style="display:none;color:#f87171;font-size:14px;text-align:center;margin-bottom:9px"></div>
+      <button id="admin-login-btn" onclick="checkAdminLogin()" style="width:100%;background:linear-gradient(135deg,#60a5fa,#1d4ed8);color:#fff;border:none;border-radius:8px;padding:11px;font-family:'Hind Siliguri',sans-serif;font-size:18px;font-weight:700;cursor:pointer">🔐 লগইন করুন</button>
+      <button onclick="showRegisterForm()" style="width:100%;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:#f59e0b;border-radius:8px;padding:10px;font-family:'Hind Siliguri',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:10px">✍️ নতুন অ্যাডমিন নিবন্ধন</button>
     </div>
-    <div id="admin-login-err" style="display:none;color:#f87171;font-size:14px;text-align:center;margin-bottom:9px">❌ ভুল পাসওয়ার্ড!</div>
-    <button onclick="checkAdminLogin()" style="width:100%;background:linear-gradient(135deg,#60a5fa,#1d4ed8);color:#fff;border:none;border-radius:8px;padding:11px;font-family:'Hind Siliguri',sans-serif;font-size:18px;font-weight:700;cursor:pointer">🔐 লগইন করুন</button>
+
+    <!-- REGISTER FORM -->
+    <div id="register-form-block" style="display:none">
+      <button onclick="showLoginForm()" style="background:none;border:none;color:#7a9ab8;font-size:13px;cursor:pointer;margin-bottom:14px;font-family:'Hind Siliguri',sans-serif;padding:0">← পিছনে যান</button>
+      <div style="font-size:13px;color:#7a9ab8;margin-bottom:14px">SR ও Delivery Man এর আলাদা নিবন্ধন লাগবে না</div>
+      <div style="margin-bottom:10px">
+        <label style="display:block;font-size:13px;color:#b8cfe0;margin-bottom:4px;font-weight:600">ব্যবসার নাম</label>
+        <input type="text" id="r-biz" placeholder="যেমন: রহমান ট্রেডার্স" style="width:100%;background:#22314a;border:1px solid #334d6e;border-radius:8px;padding:9px 12px;color:#f1f5f9;font-family:'Hind Siliguri',sans-serif;font-size:15px;outline:none;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="display:block;font-size:13px;color:#b8cfe0;margin-bottom:4px;font-weight:600">আপনার নাম</label>
+        <input type="text" id="r-name" placeholder="পূর্ণ নাম" style="width:100%;background:#22314a;border:1px solid #334d6e;border-radius:8px;padding:9px 12px;color:#f1f5f9;font-family:'Hind Siliguri',sans-serif;font-size:15px;outline:none;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="display:block;font-size:13px;color:#b8cfe0;margin-bottom:4px;font-weight:600">মোবাইল নম্বর</label>
+        <input type="tel" id="r-phone" placeholder="01XXXXXXXXX" maxlength="11" style="width:100%;background:#22314a;border:1px solid #334d6e;border-radius:8px;padding:9px 12px;color:#f1f5f9;font-family:'Hind Siliguri',sans-serif;font-size:15px;outline:none;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="display:block;font-size:13px;color:#b8cfe0;margin-bottom:4px;font-weight:600">ইমেইল</label>
+        <input type="email" id="r-email" placeholder="আপনার ইমেইল" style="width:100%;background:#22314a;border:1px solid #334d6e;border-radius:8px;padding:9px 12px;color:#f1f5f9;font-family:'Hind Siliguri',sans-serif;font-size:15px;outline:none;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:13px;color:#b8cfe0;margin-bottom:4px;font-weight:600">পাসওয়ার্ড</label>
+        <input type="password" id="r-pass" placeholder="কমপক্ষে ৬ অক্ষর" style="width:100%;background:#22314a;border:1px solid #334d6e;border-radius:8px;padding:9px 12px;color:#f1f5f9;font-family:'Hind Siliguri',sans-serif;font-size:15px;outline:none;box-sizing:border-box" onkeydown="if(event.key==='Enter')adminRegister()">
+      </div>
+      <div id="reg-err" style="display:none;color:#f87171;font-size:13px;text-align:center;margin-bottom:9px"></div>
+      <button onclick="adminRegister()" style="width:100%;background:linear-gradient(135deg,#60a5fa,#1d4ed8);color:#fff;border:none;border-radius:8px;padding:11px;font-family:'Hind Siliguri',sans-serif;font-size:16px;font-weight:700;cursor:pointer">✅ অ্যাকাউন্ট তৈরি করুন</button>
+    </div>
+
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid #334d6e;text-align:center">
       <div style="font-size:13px;color:#7a9ab8;margin-bottom:9px">অন্যান্য পোর্টাল</div>
       <div style="display:flex;gap:8px;justify-content:center">
@@ -853,7 +966,7 @@ tfoot td{padding:9px 13px;font-size:19px;font-weight:700;background:rgba(96,165,
       </div>
     </div>
   </div>
-  <div style="margin-top:13px;font-size:12px;color:#3d5a73">🔥 Firebase Realtime DB · রিয়েল-টাইম সিঙ্ক</div>
+  <div style="margin-top:13px;font-size:12px;color:#3d5a73">🔥 Firebase Auth · dealer-vai project</div>
 </div>
 
 <!-- SIDEBAR OVERLAY -->
@@ -896,9 +1009,12 @@ tfoot td{padding:9px 13px;font-size:19px;font-weight:700;background:rgba(96,165,
     <div class="sb-group">সিস্টেম</div>
     <div class="sb-item" data-p="pwmgr"><span class="ic">🔑</span><span>পাসওয়ার্ড ম্যানেজার</span></div>
   </div>
-  <div class="sb-foot" style="display:flex;align-items:center;justify-content:space-between">
-    <span>🔥 Firebase · Online</span>
-    <button onclick="adminLogout()" style="background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);border-radius:6px;padding:3px 9px;font-family:'Hind Siliguri',sans-serif;font-size:13px;cursor:pointer">🔒 লগআউট</button>
+  <div class="sb-foot" style="display:flex;flex-direction:column;gap:6px">
+    <div id="admin-user-info" style="display:none;font-size:12px;color:#60a5fa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <span>🔥 Firebase · dealer-vai</span>
+      <button onclick="adminLogout()" style="background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);border-radius:6px;padding:3px 9px;font-family:'Hind Siliguri',sans-serif;font-size:13px;cursor:pointer">🔒 লগআউট</button>
+    </div>
   </div>
 </div>
 
@@ -913,8 +1029,50 @@ tfoot td{padding:9px 13px;font-size:19px;font-weight:700;background:rgba(96,165,
       <div class="today-tag" id="today-lbl"></div>
       <button class="btn btn-gh btn-sm" onclick="toggleThemePicker()" id="theme-btn" title="থিম পরিবর্তন করুন">🎨 থিম</button>
       <button class="btn btn-gh btn-sm" id="backup-btn" onclick="exportData()">⬇ ব্যাকআপ</button>
-      <label for="imp" class="btn btn-gh btn-sm" style="cursor:pointer">⬆ রিস্টোর</label>
+      <div style="position:relative;display:inline-block">
+        <button class="btn btn-gh btn-sm" onclick="toggleRestoreMenu()" id="restore-btn">⬆ রিস্টোর ▾</button>
+        <div id="restore-menu" style="display:none;position:absolute;top:110%;right:0;background:#1e2d45;border:1px solid #3b82f6;border-radius:10px;min-width:200px;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.4);overflow:hidden">
+          <div onclick="showFirebaseRestoreModal()" style="padding:12px 16px;cursor:pointer;color:#ffffff;font-size:14px;border-bottom:1px solid #2d4a6e;display:flex;align-items:center;gap:8px;background:#1e3a5f" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#1e3a5f'">
+            🔥 Firebase থেকে রিস্টোর
+          </div>
+          <label for="imp" onclick="document.getElementById('restore-menu').style.display='none'" style="padding:12px 16px;cursor:pointer;color:#ffffff;font-size:14px;display:flex;align-items:center;gap:8px;background:#1e3a5f" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#1e3a5f'">
+            💾 লোকাল ফাইল থেকে রিস্টোর
+          </label>
+        </div>
+      </div>
       <input type="file" id="imp" accept=".json,.txt" style="display:none" onchange="importData(this)">
+
+      <!-- ══ প্রোফাইল ড্রপডাউন ══ -->
+      <div id="profile-wrap">
+        <button class="tb-avatar-btn" id="profile-btn" onclick="toggleProfileDropdown()" title="প্রোফাইল মেনু">
+          <img id="pd-avatar-img" src="" style="display:none">
+          <span id="pd-avatar-letter">A</span>
+        </button>
+        <div id="profile-dropdown">
+          <div class="pd-header">
+            <div class="pd-header-avatar">
+              <img id="pd-header-avatar-img" src="" style="display:none">
+              <span id="pd-header-letter">A</span>
+            </div>
+            <div class="pd-header-info">
+              <div class="pd-header-name" id="pd-header-name">এডমিন ইউজার</div>
+              <div class="pd-header-email" id="pd-header-email">admin@example.com</div>
+            </div>
+          </div>
+          <div class="pd-body">
+            <div class="pd-item" onclick="openProfileEditModal()"><span class="ic">👤</span><span class="lbl">প্রোফাইল</span></div>
+            <div class="pd-item" onclick="openRechargeModal()"><span class="ic">💳</span><span class="lbl">রিচার্জ করুন</span><span class="badge bal" id="pd-balance-badge">৳০</span></div>
+            <div class="pd-item" onclick="openSmsHistoryModal()"><span class="ic">💬</span><span class="lbl">এসএমএস হিস্টোরি</span></div>
+            <div class="pd-item" onclick="openSubscriptionModal()"><span class="ic">⭐</span><span class="lbl">সাবস্ক্রিপশন</span><span class="badge sub" id="pd-plan-badge">—</span></div>
+            <div class="pd-item" onclick="goToSettingsFromProfile()"><span class="ic">⚙️</span><span class="lbl">সেটিংস</span></div>
+            <div class="pd-divider"></div>
+            <div class="pd-foot">
+              <button class="pd-foot-btn" onclick="toggleThemePicker()">🎨 থিম পরিবর্তন</button>
+              <button class="pd-foot-btn pd-logout-btn" onclick="closeProfileDropdown();adminLogout()">🔒 লগআউট</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <div id="wrap">
@@ -1395,7 +1553,7 @@ tfoot td{padding:9px 13px;font-size:19px;font-weight:700;background:rgba(96,165,
       </div>
 
       <!-- ── ডেলিভারি তালিকা ── -->
-      <div class="card">
+      <div class="card" style="margin-bottom:16px">
         <div class="card-head">
           <div class="card-title">🚚 ডেলিভারি তালিকা</div>
           <div class="card-acts">
@@ -1407,6 +1565,17 @@ tfoot td{padding:9px 13px;font-size:19px;font-weight:700;background:rgba(96,165,
         </div>
         <div id="dv-accordion" style="padding:4px 0"></div>
         <div id="dv-foot-total" style="padding:8px 14px;font-size:13px;color:var(--t2);border-top:1px solid var(--border)"></div>
+      </div>
+
+      <!-- ── রিটার্ন সামারি (পণ্যভিত্তিক, গাড়ী লোড সামারির স্টাইলে) ── -->
+      <div class="card">
+        <div style="background:linear-gradient(135deg,rgba(239,68,68,.12),rgba(220,38,38,.08));border-bottom:1px solid rgba(239,68,68,.2);padding:14px 16px">
+          <div style="font-size:17px;font-weight:800;color:var(--red);margin-bottom:4px">📦 রিটার্ন সামারি — মার্কেট থেকে ফেরত (পণ্যভিত্তিক)</div>
+          <div style="font-size:13px;color:var(--t3)">উপরের "ডেলিভারি তালিকা"-র তারিখ ফিল্টার অনুযায়ী হিসাব হবে</div>
+        </div>
+        <div style="padding:8px 16px 0;font-size:13px;color:var(--blue)" id="dv-return-filter-lbl"></div>
+        <div class="ops-grid" id="dv-return-grid"></div>
+        <div style="padding:8px 16px 12px;font-size:14px;color:var(--t3);border-top:1px solid var(--border);margin-top:4px">* ডেলিভারি ম্যানের কাছ থেকে ফেরত পণ্য বুঝে নেওয়ার জন্য — তারিখ ফিল্টার করা ডেলিভারি থেকে মোট রিটার্ন</div>
       </div>
     </div>
 
@@ -2009,6 +2178,7 @@ tfoot td{padding:9px 13px;font-size:19px;font-weight:700;background:rgba(96,165,
               <th style="padding:8px;text-align:right">ছাড় (৳)</th>
               <th style="padding:8px;text-align:left">নোট</th>
               <th style="padding:8px;text-align:center">এডিট</th>
+              <th style="padding:8px;text-align:center">ডিলিট</th>
             </tr></thead>
             <tbody id="ph-body"></tbody>
             <tfoot id="ph-foot"></tfoot>
@@ -2658,6 +2828,62 @@ tfoot td{padding:9px 13px;font-size:19px;font-weight:700;background:rgba(96,165,
 
 <script>
 // ══════════════════════════════════════════
+//  বাংলা→ইংরেজি ডিজিট কনভার্টার ও ইনপুট স্যানিটাইজার
+//  সব input[type=number]/[type=tel] ফিল্ডে কাজ করে
+//  নতুন তৈরি হওয়া মোডাল ইনপুটেও কাজ করবে (event delegation)
+// ══════════════════════════════════════════
+(function(){
+  var BN_DIGITS = '০১২৩৪৫৬৭৮৯';
+  function bnToEn(str){
+    return String(str).replace(/[০-৯]/g, function(ch){ return BN_DIGITS.indexOf(ch); });
+  }
+  function sanitizeNumber(str){
+    str = bnToEn(str);
+    var neg = str.charAt(0) === '-';
+    str = str.replace(/[^0-9.]/g, '');
+    var parts = str.split('.');
+    if (parts.length > 2) str = parts[0] + '.' + parts.slice(1).join('');
+    if (neg) str = '-' + str;
+    return str;
+  }
+  function sanitizeTel(str){
+    str = bnToEn(str);
+    return str.replace(/[^0-9+\-\s()]/g, '');
+  }
+  // যেসব text ইনপুটকে phone-only হিসেবে enforce করতে হবে (type="text" হলেও)
+  var PHONE_ONLY_IDS = ['o-mobile-search', 'card-search-mobile'];
+
+  function handleInput(e){
+    var el = e.target;
+    if (!el || !el.tagName || el.tagName !== 'INPUT') return;
+    var type = (el.getAttribute('type')||'').toLowerCase();
+    var isPhoneOnlyId = PHONE_ONLY_IDS.indexOf(el.id) !== -1;
+    if (type !== 'number' && type !== 'tel' && !isPhoneOnlyId) return;
+
+    var pos = el.selectionStart;
+    var before = el.value;
+    var after;
+    if (type === 'number') after = sanitizeNumber(before);
+    else after = sanitizeTel(before);
+
+    if (after !== before) {
+      var diff = before.length - after.length;
+      el.value = after;
+      var newPos = Math.max(0, (pos||after.length) - diff);
+      try { el.setSelectionRange(newPos, newPos); } catch(e2){}
+    }
+  }
+
+  document.addEventListener('input', handleInput, true);
+  document.addEventListener('paste', function(e){
+    var el = e.target;
+    if (!el || !el.tagName || el.tagName !== 'INPUT') return;
+    setTimeout(function(){ handleInput({target: el}); }, 0);
+  }, true);
+})();
+// ══════════════════════════════════════════ (end digit sanitizer)
+
+// ══════════════════════════════════════════
 //  SIDEBAR (Hamburger)
 // ══════════════════════════════════════════
 function toggleSidebar() {
@@ -2696,15 +2922,31 @@ function closeSidebar() {
 //  FIREBASE CONFIG
 // ════════════════════════════════════════════════════════
 const firebaseConfig = {
-  apiKey:            "AIzaSyDKc0n5OHQwJvyw0eN1xZtPvoYjbtbRRWE",
-  authDomain:        "dealership-manager.firebaseapp.com",
-  databaseURL:       "https://dealership-manager-default-rtdb.firebaseio.com",
-  projectId:         "dealership-manager",
-  storageBucket:     "dealership-manager.firebasestorage.app",
-  messagingSenderId: "416895402018",
-  appId:             "1:416895402018:web:89afbedb035d1952ce8a7b",
-  measurementId:     "G-NXLGYYWF00"
+  apiKey:            "AIzaSyCP2RmMbWM43H6w_7_6YKtD5bXkoCoKTTw",
+  authDomain:        "dealer-vai.firebaseapp.com",
+  databaseURL:       "https://dealer-vai-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "dealer-vai",
+  storageBucket:     "dealer-vai.firebasestorage.app",
+  messagingSenderId: "305454773026",
+  appId:             "1:305454773026:web:901bd16600518cf4172b7b"
 };
+// ════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════
+//  MULTI-TENANT (BUSINESS) ID
+//  এখন একটাই ব্যবসা (বন্ধুর) — ভবিষ্যতে Dealer-Vai SaaS এ
+//  এটা login করা admin এর businessId থেকে dynamic হবে।
+//  সব Firebase data এই BIZ_ID এর নিচে নেস্টেড থাকে, যাতে
+//  ভবিষ্যতে একই Firebase project এ একাধিক ব্যবসার data
+//  আলাদা থাকে এবং একে অপরের সাথে না মিশে।
+// ════════════════════════════════════════════════════════
+let BIZ_ID = null; // login করা admin এর Firebase Auth UID থেকে dynamic ভাবে সেট হয়
+
+// সব Firebase RTDB পাথকে BIZ_ID দিয়ে wrap করে — যেকোনো জায়গায়
+// FDB.ref('data/'+k) এর বদলে bizRef('data/'+k) ব্যবহার করুন।
+function bizRef(path) {
+  return FDB.ref('businesses/' + BIZ_ID + '/' + path);
+}
 // ════════════════════════════════════════════════════════
 
 // Firebase SDK dynamic loader
@@ -2713,6 +2955,8 @@ let fbOnline = false;
 const fbPending = {};
 
 let _fbCBDone = false;
+let FAUTH = null;
+let FSTORE = null;
 function _safeCB(cb, val) { if(_fbCBDone) return; _fbCBDone=true; cb(val); }
 
 function loadFirebaseSDK(callback) {
@@ -2721,6 +2965,8 @@ function loadFirebaseSDK(callback) {
     try {
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
       FDB = firebase.database();
+      if (firebase.auth) FAUTH = firebase.auth();
+      if (firebase.firestore) FSTORE = firebase.firestore();
       _safeCB(callback, true);
     } catch(e) { _safeCB(callback, false); }
     return;
@@ -2733,16 +2979,46 @@ function loadFirebaseSDK(callback) {
     s2.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
     s2.onerror = function() { _safeCB(callback, false); };
     s2.onload = function() {
-      try {
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        FDB = firebase.database();
-        _safeCB(callback, true);
-      } catch(e) { console.warn('Firebase init error:', e); _safeCB(callback, false); }
+      var s3 = document.createElement('script');
+      s3.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js';
+      s3.onerror = function() { _initDbOnly(callback); };
+      s3.onload = function() {
+        var s4 = document.createElement('script');
+        s4.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js';
+        s4.onerror = function() { _initAuthDb(callback); };
+        s4.onload = function() { _initAuthDbFs(callback); };
+        document.head.appendChild(s4);
+      };
+      document.head.appendChild(s3);
     };
     document.head.appendChild(s2);
   };
   document.head.appendChild(s1);
-  setTimeout(function() { _safeCB(callback, false); }, 1500);
+  setTimeout(function() { _safeCB(callback, false); }, 2500);
+}
+function _initDbOnly(callback) {
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    FDB = firebase.database();
+    _safeCB(callback, true);
+  } catch(e) { _safeCB(callback, false); }
+}
+function _initAuthDb(callback) {
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    FDB = firebase.database();
+    FAUTH = firebase.auth();
+    _safeCB(callback, true);
+  } catch(e) { _safeCB(callback, false); }
+}
+function _initAuthDbFs(callback) {
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    FDB = firebase.database();
+    FAUTH = firebase.auth();
+    FSTORE = firebase.firestore();
+    _safeCB(callback, true);
+  } catch(e) { console.warn('Firebase init error:', e); _safeCB(callback, false); }
 }
 
 // ── LOCAL CACHE (offline backup) ──
@@ -2752,9 +3028,11 @@ const C = {
 };
 
 // ── GEMINI AI CONFIG (বকেয়া রিমাইন্ডার) ──
+// businessName এখন hardcoded নয় — login করা business এর meta থেকে
+// dynamically সেট হয় (দেখুন checkSubscriptionAndRender)
 const GEMINI_CONFIG = {
   apiKey: "AQ.Ab8RN6Kx-D-N8P4UtjoP3GQKDpGJ5jGRm-Hesv3izDcpM4y3HA",
-  businessName: "পদ্মা ট্রেডার্স"
+  businessName: "আপনার ব্যবসা" // login হওয়ার পরে আসল নাম দিয়ে আপডেট হবে
 };
 
 // ── DB OBJECT (Firebase + Cache) ──
@@ -2762,17 +3040,100 @@ const DB = {
   get: k => C.get(k) || [],
   set: (k, data) => {
     C.set(k, data);
-    if (fbOnline) FDB.ref('data/'+k).set(data).catch(e => console.warn('FB write:', e));
+    if (fbOnline) bizRef('data/'+k).set(data).catch(e => console.warn('FB write:', e));
     else fbPending[k] = data;
   },
   nextId: k => { const a = DB.get(k); return a.length ? Math.max(...a.map(x=>x.id||0))+1 : 1; }
 };
 
+// ══════════════════════════════════════════
+//  SR/DM PORTAL AUTH (মোবাইল + পাসওয়ার্ড)
+//  মোবাইল নাম্বারকে fake email বানিয়ে Firebase Auth ব্যবহার করা হয়,
+//  যাতে সরাসরি sr-portal/delivery-portal থেকে signInWithEmailAndPassword
+//  দিয়ে লগইন করা যায় এবং sr_links/{uid} থেকেই BIZ_ID বের করা যায়।
+//  "Secondary app trick" — admin এর নিজের লগইন সেশন touch করে না।
+// ══════════════════════════════════════════
+function mobileToAuthEmail(mobile) {
+  const digits = String(mobile||'').replace(/[^0-9]/g,'');
+  return digits + '@dealervai.local';
+}
+
+// fn(secondaryAuth) চালিয়ে কাজ শেষে secondary app সবসময় cleanup (signOut + delete) করে দেয়
+function withSecondaryApp(fn) {
+  return new Promise((resolve, reject) => {
+    // Auth SDK লোড হয়েছে কিনা চেক
+    if (typeof firebase === 'undefined' || !firebase.auth) {
+      reject(new Error('Firebase Auth SDK লোড হয়নি। পেজ রিফ্রেশ করুন।'));
+      return;
+    }
+    let sec;
+    try {
+      // আগের Secondary app থাকলে মুছে নতুন তৈরি করো
+      const existing = firebase.apps.find(a => a.name === 'Secondary');
+      if (existing) {
+        existing.delete().catch(()=>{});
+      }
+      sec = firebase.initializeApp(firebaseConfig, 'Secondary');
+    } catch (e) {
+      reject(e);
+      return;
+    }
+    const secAuth = sec.auth();
+    secAuth.setPersistence(firebase.auth.Auth.Persistence.NONE).catch(()=>{});
+    Promise.resolve(fn(secAuth))
+      .then(result => {
+        secAuth.signOut().catch(()=>{});
+        setTimeout(()=>{ sec.delete().catch(()=>{}); }, 500);
+        resolve(result);
+      })
+      .catch(err => {
+        secAuth.signOut().catch(()=>{});
+        setTimeout(()=>{ sec.delete().catch(()=>{}); }, 500);
+        reject(err);
+      });
+  });
+}
+
+// নতুন SR/DM এর জন্য Firebase Auth account তৈরি — admin এর session touch করে না
+function createPortalAccount(mobile, password) {
+  const email = mobileToAuthEmail(mobile);
+  return withSecondaryApp(secAuth =>
+    secAuth.createUserWithEmailAndPassword(email, password).then(cred => cred.user.uid)
+  );
+}
+
+// বিদ্যমান SR/DM এর পাসওয়ার্ড পরিবর্তন — পুরনো পাসওয়ার্ড জানা থাকতে হবে
+// (admin এর কাছে এটা সেভ করা থাকে, কারণ admin-ই পাসওয়ার্ড সেট করে)
+function resetPortalPassword(mobile, oldPassword, newPassword) {
+  const email = mobileToAuthEmail(mobile);
+  return withSecondaryApp(secAuth =>
+    secAuth.signInWithEmailAndPassword(email, oldPassword).then(cred => cred.user.updatePassword(newPassword))
+  );
+}
+
+// বিদ্যমান SR/DM এর মোবাইল (=login email) পরিবর্তন — পুরনো পাসওয়ার্ড জানা থাকতে হবে
+function updatePortalMobile(oldMobile, newMobile, knownPass) {
+  const oldEmail = mobileToAuthEmail(oldMobile);
+  const newEmail = mobileToAuthEmail(newMobile);
+  return withSecondaryApp(secAuth =>
+    secAuth.signInWithEmailAndPassword(oldEmail, knownPass).then(cred => cred.user.updateEmail(newEmail))
+  );
+}
+
+// root-level mapping: sr_links/{authUid} = {bizId, role, id, updatedAt} — login এর পর এখান থেকেই business বের হয়
+function writePortalLink(authUid, srOrDmId, role) {
+  return FDB.ref('sr_links/' + authUid).set({ bizId: BIZ_ID, role, id: srOrDmId, updatedAt: Date.now() });
+}
+function deletePortalLink(authUid) {
+  if (!authUid) return Promise.resolve();
+  return FDB.ref('sr_links/' + authUid).remove().catch(()=>{});
+}
+
 // ── LOCKED PRICE (Firebase) ──
 function saveLockedPrice(shopId, prodId, price) {
   const key = 'lp_'+shopId+'_'+prodId;
   const store = C.get('lp') || {}; store[key] = price; C.set('lp', store);
-  if (fbOnline) FDB.ref('lp/'+key).set(price).catch(e=>{});
+  if (fbOnline) bizRef('lp/'+key).set(price).catch(e=>{});
 }
 function getLockedPrice(shopId, prodId) {
   if (!shopId||!prodId) return null;
@@ -2782,27 +3143,7 @@ function getLockedPrice(shopId, prodId) {
 // ── SEED DATA ──────────────────────────────
 function seed() {
   if (DB.get('products').length) return;
-  DB.set('products',[
-    {id:1,code:'P001',name:'সানলাইট সাবান (৪৮ পিস)',company:'Unilever',buy:1200,sell:1400,stock:100},
-    {id:2,code:'P002',name:'লাক্স সাবান (৪৮ পিস)',company:'Unilever',buy:1500,sell:1750,stock:80},
-    {id:3,code:'P003',name:'হুইল পাউডার (৬কেজি×৬)',company:'Unilever',buy:2200,sell:2500,stock:60},
-    {id:4,code:'P004',name:'ডোভ শ্যাম্পু (৩০০মল×১২)',company:'Unilever',buy:1800,sell:2100,stock:50},
-    {id:5,code:'P005',name:'ক্লোজআপ টুথপেস্ট (২৪ পিস)',company:'Unilever',buy:1600,sell:1900,stock:70},
-    {id:6,code:'P006',name:'রিন ডিটারজেন্ট (৫০০গ্রা×১২)',company:'Unilever',buy:900,sell:1100,stock:45},
-  ]);
-  DB.set('srs',[
-    {id:1,code:'SR001',name:'মোঃ রফিকুল ইসলাম',phone:'01712-345678',area:'মিরপুর',salary:15000,commission:2,target:200000},
-    {id:2,code:'SR002',name:'মোঃ কামাল হোসেন',phone:'01812-456789',area:'উত্তরা',salary:14000,commission:2,target:180000},
-    {id:3,code:'SR003',name:'মোঃ জাহাঙ্গীর আলম',phone:'01912-567890',area:'মোহাম্মদপুর',salary:13000,commission:2,target:160000},
-  ]);
-  DB.set('shops',[
-    {id:1,code:'S001',name:'আল-আমিন স্টোর',owner:'মোঃ আমিন',phone:'01611-111111',area:'মিরপুর-১',srId:1,credit:20000},
-    {id:2,code:'S002',name:'রহমান ট্রেডার্স',owner:'মোঃ রহমান',phone:'01622-222222',area:'মিরপুর-২',srId:1,credit:15000},
-    {id:3,code:'S003',name:'করিম সুপার শপ',owner:'মোঃ করিম',phone:'01633-333333',area:'পল্লবী',srId:1,credit:25000},
-    {id:4,code:'S004',name:'হাসান মার্কেট',owner:'মোঃ হাসান',phone:'01644-444444',area:'উত্তরা-১',srId:2,credit:18000},
-    {id:5,code:'S005',name:'নূর ট্রেডিং',owner:'মোঃ নূর',phone:'01655-555555',area:'উত্তরা-৩',srId:2,credit:12000},
-    {id:6,code:'S006',name:'বাংলা স্টোর',owner:'মোঃ বাশার',phone:'01666-666666',area:'মোহাম্মদপুর',srId:3,credit:20000},
-  ]);
+  if (fbOnline) return; // Firebase connected — seed করা যাবে না
 }
 
 // ══════════════════════════════════════════
@@ -2814,6 +3155,14 @@ const today = () => new Date().toISOString().split('T')[0];
 const monthStart = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`; };
 const byId = (arr,id) => arr.find(x=>x.id==id)||{};
 const emptyRow = (cols,msg='কোনো ডেটা নেই') => `<tr class="empty"><td colspan="${cols}">${msg}</td></tr>`;
+
+// কোড অনুযায়ী natural/numeric sort — SR1, SR2, SR10 ঠিক ক্রমে আসবে (SR1, SR10, SR2 না)
+function sortByCode(arr) {
+  return arr.slice().sort((a, b) => {
+    const ca = String(a.code || ''), cb = String(b.code || '');
+    return ca.localeCompare(cb, undefined, { numeric: true, sensitivity: 'base' });
+  });
+}
 
 // ══════════════════════════════════════════
 //  🛡️ FRAUD & ANOMALY DETECTION ENGINE
@@ -3222,24 +3571,50 @@ const pageInits = {
   market: function() { initMarketPage(); },
   fraud: function() { runFraudDetection(); }
 };
+// বর্তমানে কোন পেজ খোলা আছে — রিয়েল-টাইম ডেটা আপডেট এলে শুধু এই পেজটাই রিফ্রেশ করা হয়
+let _currentPage = 'dash';
+// pageInits-এর মতোই, কিন্তু ফিল্টার/তারিখ/ফর্ম রিসেট করে না — দূরের ডিভাইস থেকে ডেটা
+// বদলালে নিঃশব্দে টেবিল/লিস্ট আপডেট করার জন্য (ব্যবহারকারীর সিলেক্ট করা ফিল্টার অক্ষত থাকে)
+const liveRefresh = {
+  dash: renderDash,
+  order: () => { renderOrders(); renderOrderProductSummary(); },
+  delivery: () => { renderDeliveryCards(); renderDeliveries(); },
+  expense: renderExpenses,
+  stock: renderProducts,
+  products: () => { renderProducts(); _updateProductKPIs(); },
+  sr: renderSRs, dm: renderDMs, shops: renderShops, outstanding: renderOutstanding,
+  suppliers: renderSuppliers,
+  payable: renderPayable,
+  bi: function() { renderBI(); }
+  // report/tracking/route/churn/market/fraud — এগুলো ব্যবহারকারীর একশনে (বাটন চেপে) জেনারেট হয়,
+  // তাই ব্যাকগ্রাউন্ডে অটো-রিফ্রেশ করা হয় না, ফিল্টার/রেজাল্ট নষ্ট হওয়া এড়াতে
+};
+// navTo helper — lock screen থেকে ড্যাশবোর্ডে ফেরার জন্য
+function navTo(p) {
+  const item = document.querySelector(`.sb-item[data-p="${p}"]`);
+  if (item) item.click();
+}
+
 function switchToProducts() {
   document.querySelectorAll('.sb-item').forEach(x=>x.classList.remove('on'));
   document.querySelectorAll('.pg').forEach(x=>x.classList.remove('on'));
   document.querySelector('[data-p="products"]').classList.add('on');
   document.getElementById('pg-products').classList.add('on');
   document.getElementById('ptitle').textContent = titles['products'];
+  _currentPage = 'products';
   renderProducts();
 }
 
 document.querySelectorAll('.sb-item').forEach(el => {
   el.addEventListener('click', () => {
+    const p = el.dataset.p;
     document.querySelectorAll('.sb-item').forEach(x=>x.classList.remove('on'));
     document.querySelectorAll('.pg').forEach(x=>x.classList.remove('on'));
     el.classList.add('on');
-    const p = el.dataset.p;
     document.getElementById('pg-'+p).classList.add('on');
     document.getElementById('ptitle').textContent = titles[p] || p;
-    closeSidebar(); // আগে বন্ধ করো, তারপর page init
+    _currentPage = p;
+    closeSidebar();
     if (pageInits[p]) setTimeout(() => pageInits[p](), 50);
   });
 });
@@ -3345,7 +3720,7 @@ function renderDash() {
   animateKpiNumbers();
 
   // Low stock — প্রতিটি পণ্যের নিজস্ব alertThreshold ব্যবহার করে
-  const prods = DB.get('products').filter(p=>p.stock < (p.alertThreshold||10));
+  const prods = sortByCode(DB.get('products').filter(p=>p.stock < (p.alertThreshold||10)));
   document.getElementById('d-lowstock').innerHTML = prods.length
     ? prods.map(p=>`<tr><td>${p.name}</td><td class="r"><span class="b ${p.stock<=0?'br':'bo'}">${p.stock}</span></td><td><span class="b ${p.stock<=0?'br':'bo'}">${p.stock<=0?'স্টক শেষ':'কম স্টক'}</span><span style="font-size:13px;color:var(--t3);margin-left:6px">(এলার্ট: ${p.alertThreshold||10})</span></td></tr>`).join('')
     : emptyRow(3,'✅ সব পণ্যের পর্যাপ্ত স্টক আছে');
@@ -4866,11 +5241,22 @@ function calcOutstanding() {
   deliveries.forEach(d=>{
     if(!map[d.shopId]) {
       const sh=byId(shops,d.shopId), sr=byId(srs,sh.srId||0);
-      map[d.shopId]={shop:sh.name||'?',sr:sr.name||'?',area:sh.area||'',sales:0,cash:0,discount:0,out:0,shopId:d.shopId};
+      map[d.shopId]={shop:sh.name||'?',sr:sr.name||'?',area:sh.area||'',sales:0,cash:0,discount:0,manualDue:0,out:0,shopId:d.shopId};
     }
     const net=d.delivered-d.returned;
     map[d.shopId].sales+=net*d.price;
     map[d.shopId].cash+=d.cash;
+  });
+  // manual_outstanding — payments এর আগেই sales ও manualDue এ যোগ করো
+  // যাতে পরে payments (collected/discount) দিয়ে সেটা কমানো যায়
+  const manualOuts=DB.get('manual_outstanding')||[];
+  manualOuts.forEach(m=>{
+    if(!map[m.shopId]){
+      const sh=byId(shops,m.shopId)||{}, sr=byId(srs,sh.srId||0)||{};
+      map[m.shopId]={shop:sh.name||'?',sr:sr.name||'—',area:sh.area||'',sales:0,cash:0,discount:0,manualDue:0,out:0,shopId:m.shopId};
+    }
+    map[m.shopId].sales     += (m.amount||0);
+    map[m.shopId].manualDue += (m.amount||0);
   });
   payments.forEach(p=>{
     if(map[p.shopId]) {
@@ -4878,17 +5264,8 @@ function calcOutstanding() {
       map[p.shopId].discount += p.discount  || 0;
     }
   });
+  // এখন Math.max(0,...) — যদি পেমেন্ট বকেয়ার চেয়ে বেশি হয় তাহলে ০ দেখাবে
   Object.values(map).forEach(v=>v.out=Math.max(0, v.sales-v.cash-v.discount));
-  // manual_outstanding — সব caller এ মিল রাখতে এখানেই যোগ
-  const manualOuts=DB.get('manual_outstanding')||[];
-  manualOuts.forEach(m=>{
-    if(!map[m.shopId]){
-      const sh=byId(shops,m.shopId)||{}, sr=byId(srs,sh.srId||0)||{};
-      map[m.shopId]={shop:sh.name||'?',sr:sr.name||'—',area:sh.area||'',sales:0,cash:0,discount:0,out:0,shopId:m.shopId};
-    }
-    map[m.shopId].out   += (m.amount||0);
-    map[m.shopId].sales += (m.amount||0);
-  });
   return map;
 }
 
@@ -5348,7 +5725,7 @@ function saveDelivery() {
   const prods=DB.get('products');
   const pidx=prods.findIndex(p=>p.id==parseInt(pr));
   const _p0 = pidx>=0 ? prods[pidx] : null;
-  const buyPrice = _p0 ? _p0.buy / (parseInt(_p0.pcsPerUnit)||1) : 0;
+  const buyPrice = _p0 ? (_p0.buy||0) : 0;
   // স্টক অর্ডারের সময় কমেছে; শুধু রিটার্ন ফিরিয়ে দাও
   if(pidx>=0 && ret>0){
     prods[pidx].stock = prods[pidx].stock + ret;
@@ -5364,12 +5741,91 @@ function saveDelivery() {
   dvClose();
   renderDeliveries(); populateSelects();
 }
+// রিটার্ন সামারি (পণ্যভিত্তিক) — ডেলিভারি তালিকার তারিখ ফিল্টার অনুযায়ী
+function renderReturnSummary(filteredList) {
+  const grid = document.getElementById('dv-return-grid');
+  if (!grid) return;
+  const lblEl = document.getElementById('dv-return-filter-lbl');
+  const from = v('dvf-from'), to = v('dvf-to');
+  if (lblEl) {
+    if (from || to) {
+      let label = '🔍 ফিল্টার: ';
+      if (from && to) label += fmtD(from) + ' থেকে ' + fmtD(to);
+      else if (from)  label += fmtD(from) + ' থেকে';
+      else             label += fmtD(to) + ' পর্যন্ত';
+      lblEl.textContent = label;
+    } else {
+      lblEl.textContent = '🔍 ফিল্টার: সব তারিখ';
+    }
+  }
+
+  const prods = DB.get('products');
+  const map = {};
+  (filteredList||[]).forEach(d => {
+    if (!d.returned) return;
+    map[d.prodId] = (map[d.prodId]||0) + d.returned;
+  });
+
+  const entries = Object.entries(map).filter(([,qty]) => qty > 0);
+  if (!entries.length) {
+    grid.innerHTML = '<div style="padding:18px 16px;font-size:16px;color:var(--t3);text-align:center">এই তারিখে কোনো রিটার্ন নেই</div>';
+    return;
+  }
+
+  const struckKey = 'adm_return_struck_items';
+  let struckSet = new Set(JSON.parse(localStorage.getItem(struckKey) || '[]'));
+
+  grid.innerHTML = entries.sort((a,b)=>b[1]-a[1]).map(([prodId, qty]) => {
+    const prod = prods.find(p=>p.id==prodId)||{};
+    const _ppu=parseInt(prod.pcsPerUnit)||1,_unit=prod.unit||'পিস';
+    let _uch='';if(qty>0&&_ppu>1){const u=Math.floor(qty/_ppu),r=qty%_ppu;const h=u>0&&r>0?`${u} ${_unit} ${r} পিস`:u>0?`${u} ${_unit}`:`${r} পিস`;_uch=`<div style="font-size:10px;color:var(--blue);font-weight:600;margin-top:2px">${h}</div>`;}
+    const isStruck = struckSet.has(String(prodId));
+    return `<div class="ops-item ops-item-toggle${isStruck?' ops-struck':''}" onclick="toggleReturnStrike(this,'${prodId}')" style="cursor:pointer;user-select:none;transition:all .2s${isStruck?';opacity:.45':''}">
+      <div class="ops-name${isStruck?' ops-name-struck':''}" style="${isStruck?'color:var(--t3)':''}">${prod.name||'?'}</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">
+        <div style="display:flex;align-items:baseline;gap:3px">
+          <span class="ops-qty" style="color:${isStruck?'var(--t3)':'var(--red)'};${isStruck?'text-decoration:line-through':''}">${qty}</span>
+          <span class="ops-unit">পিস</span>
+          ${isStruck?'<span class="ops-ck" style="font-size:16px;margin-left:4px">✅</span>':''}
+        </div>
+        ${_uch}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleReturnStrike(el, pid) {
+  const struckKey = 'adm_return_struck_items';
+  let struckSet = new Set(JSON.parse(localStorage.getItem(struckKey) || '[]'));
+  const isStruck = struckSet.has(String(pid));
+  if (isStruck) {
+    struckSet.delete(String(pid));
+    el.style.opacity = '';
+    el.classList.remove('ops-struck');
+    const nm = el.querySelector('.ops-name'); if (nm) { nm.classList.remove('ops-name-struck'); nm.style.color=''; }
+    const qs = el.querySelector('.ops-qty'); if (qs) { qs.style.textDecoration=''; qs.style.color='var(--red)'; }
+    const ck = el.querySelector('.ops-ck'); if (ck) ck.remove();
+  } else {
+    struckSet.add(String(pid));
+    el.style.opacity = '.45';
+    el.classList.add('ops-struck');
+    const nm = el.querySelector('.ops-name'); if (nm) { nm.classList.add('ops-name-struck'); nm.style.color='var(--t3)'; }
+    const qs = el.querySelector('.ops-qty'); if (qs) { qs.style.textDecoration='line-through'; qs.style.color='var(--t3)'; }
+    if (!el.querySelector('.ops-ck')) {
+      const ck = document.createElement('span'); ck.className='ops-ck'; ck.style.cssText='font-size:16px;margin-left:4px'; ck.textContent='✅';
+      const wrap = el.querySelector('.ops-qty')?.parentNode; if (wrap) wrap.appendChild(ck);
+    }
+  }
+  localStorage.setItem(struckKey, JSON.stringify([...struckSet]));
+}
+
 function renderDeliveries() {
   const from=v('dvf-from'), to=v('dvf-to');
   let list=DB.get('deliveries').filter(d=>(!from||d.date>=from)&&(!to||d.date<=to));
   list.sort((a,b)=>b.id-a.id);
   const shops=DB.get('shops'),prods=DB.get('products'),srs=DB.get('srs');
   const acc=document.getElementById('dv-accordion');
+  renderReturnSummary(list);
   if(!list.length){
     acc.innerHTML='<div style="padding:18px;text-align:center;color:var(--t3)">কোনো ডেলিভারি নেই</div>';
     document.getElementById('dv-foot-total').innerHTML='';
@@ -5973,7 +6429,7 @@ function openProductsListModal() {
 function openLowStockModal() {
   const t=document.getElementById('prod-modal-title');
   if(t){t.textContent='⚠️ কম স্টক পণ্য';}
-  const prods=DB.get('products').filter(p=>(p.stock||0)<(p.alertThreshold||10));
+  const prods=sortByCode(DB.get('products').filter(p=>(p.stock||0)<(p.alertThreshold||10)));
   populateSelects();
   _updateProductKPIs();
   const body=document.getElementById('pr-body');
@@ -6029,7 +6485,7 @@ function _updateProductKPIs() {
 function renderProducts() {
   populateSelects();
   _updateProductKPIs();
-  const prods=DB.get('products');
+  const prods=sortByCode(DB.get('products'));
   document.getElementById('pr-body').innerHTML = prods.length
     ? prods.map(p=>{
         const pct=p.buy>0?((p.sell-p.buy)/p.buy*100).toFixed(1):0;
@@ -6086,7 +6542,7 @@ function openProdEditModal(id) {
         </div></div>
       <div class="fg"><label>ইউনিট টাইপ</label>
         <select id="mf-unit" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-family:'Hind Siliguri',sans-serif;font-size:15px;outline:none">
-          ${['পিস','কার্টন','বয়াম','বস্তা','বক্স','জার','টিন','কেস','প্যাকেট','কেজি'].map(u=>`<option value="${u}"${(p.unit||'পিস')===u?' selected':''}">${u}</option>`).join('')}
+          ${['পিস','কার্টন','বয়াম','বস্তা','বক্স','জার','টিন','কেস','প্যাকেট','কেজি'].map(u=>`<option value="${u}"${(p.unit||'পিস')===u?' selected':''}>${u}</option>`).join('')}
         </select></div>
       <div class="fg"><label>পিস/ইউনিট <span style="color:var(--t3);font-weight:400;font-size:13px">(যেমন: ১ কার্টন = ২৪ পিস)</span></label><input id="mf-ppu" type="number" min="1" value="${p.pcsPerUnit||1}"></div>
       <div class="fg"><label>ক্রয় মূল্য (৳) *</label><input id="mf-buy" type="number" min="0" value="${p.buy}"></div>
@@ -6150,7 +6606,7 @@ function getNextSRCode() {
 }
 
 function renderSRs() {
-  const srs=DB.get('srs');
+  const srs=sortByCode(DB.get('srs'));
   document.getElementById('sr-body').innerHTML = srs.length
     ? srs.map(s=>{
         const hasPhoto = s.photo || s.nidPhoto;
@@ -6160,7 +6616,7 @@ function renderSRs() {
         return `<tr>
         <td style="padding:6px 10px">${photoCell}</td>
         <td><span class="b bb">${s.code}</span></td>
-        <td><b>${s.name}</b></td><td><a href="tel:${s.phone}" style="color:inherit;text-decoration:none">${s.phone||'—'}</a></td><td>${s.area||'—'}</td>
+        <td><b>${s.name}</b></td><td><a href="tel:${s.phone}" style="color:inherit;text-decoration:none">${s.phone||'—'}</a> ${s.authUid?'<span title="পোর্টাল লগইন অ্যাকাউন্ট আছে" style="color:var(--green)">✅</span>':'<span title="পোর্টাল লগইন অ্যাকাউন্ট নেই — Edit করে সেট করুন" style="color:var(--orange)">⚠️</span>'}</td><td>${s.area||'—'}</td>
         <td class="r">${fmt(s.salary)}</td>
         <td class="r">${s.commission}%</td>
         <td class="r">${fmt(s.target)}</td>
@@ -6180,31 +6636,60 @@ function openEditSR(id) {
   const srs = DB.get('srs');
   const s = srs.find(x=>x.id===id);
   if (!s) return;
+  const hasAuth = !!s.authUid;
   document.getElementById('m-title').textContent = '✏️ SR সম্পাদনা';
   document.getElementById('m-body').innerHTML = `<div class="g2">
     <div class="fg"><label>SR কোড *</label><input id="es-code" value="${s.code}"></div>
     <div class="fg"><label>SR নাম *</label><input id="es-name" value="${s.name}"></div>
-    <div class="fg"><label>মোবাইল</label><input id="es-phone" value="${s.phone||''}" type="tel"></div>
+    <div class="fg"><label>মোবাইল * <span style="color:var(--t3);font-weight:400;font-size:13px">(এটাই লগইন আইডি)</span></label><input id="es-phone" value="${s.phone||''}" type="tel"></div>
+    <div class="fg"><label>${hasAuth ? 'নতুন পাসওয়ার্ড (ঐচ্ছিক)' : 'পাসওয়ার্ড * (পোর্টাল অ্যাকাউন্ট নেই, তৈরি হবে)'}</label><input id="es-pass" type="text" placeholder="${hasAuth?'খালি রাখলে পরিবর্তন হবে না':'কমপক্ষে ৪ অক্ষর'}"></div>
     <div class="fg"><label>এলাকা/রুট</label><input id="es-area" value="${s.area||''}"></div>
     <div class="fg"><label>বেতন (৳)</label><input id="es-salary" type="number" value="${s.salary||0}" min="0"></div>
     <div class="fg"><label>কমিশন %</label><input id="es-comm" type="number" value="${s.commission||2}" min="0" max="100"></div>
     <div class="fg"><label>মাসিক টার্গেট (৳)</label><input id="es-target" type="number" value="${s.target||0}" min="0"></div>
+    ${!hasAuth?'<div style="grid-column:1/-1;color:var(--orange);font-size:13px">⚠️ এই SR-এর এখনো পোর্টাল লগইন অ্যাকাউন্ট নেই — সেভ করলে মোবাইল+পাসওয়ার্ড দিয়ে তৈরি হবে।</div>':''}
   </div>`;
-  document.getElementById('m-save').onclick = () => {
-    const code = v('es-code').trim(), name = v('es-name').trim();
+  document.getElementById('m-save').onclick = async () => {
+    const code = v('es-code').trim(), name = v('es-name').trim(), phone = v('es-phone').trim(), newPass = v('es-pass').trim();
     if (!code || !name) { toast('কোড ও নাম দিন', false); return; }
+    if (!phone) { toast('মোবাইল নাম্বার দিন', false); return; }
     const allSRs = DB.get('srs');
     const conflict = allSRs.find(x => x.code === code && x.id !== id);
     if (conflict) { toast('এই কোড অন্য SR-এ ব্যবহার হয়েছে', false); return; }
-    const idx = allSRs.findIndex(x => x.id === id);
-    if (idx >= 0) {
-      allSRs[idx] = { ...allSRs[idx], code, name, phone:v('es-phone'), area:v('es-area'),
-        salary:parseFloat(v('es-salary'))||0, commission:parseFloat(v('es-comm'))||2,
-        target:parseFloat(v('es-target'))||0, updatedAt:new Date().toISOString() };
-      DB.set('srs', allSRs);
+    const phoneConflict = allSRs.find(x => x.id !== id && String(x.phone||'').replace(/[^0-9]/g,'')===phone.replace(/[^0-9]/g,''));
+    if (phoneConflict) { toast('এই মোবাইল নাম্বার অন্য SR-এ ব্যবহার হয়েছে', false); return; }
+    if (!hasAuth && (!newPass || newPass.length<4)) { toast('কমপক্ষে ৪ অক্ষরের পাসওয়ার্ড দিন', false); return; }
+    const btn = document.getElementById('m-save'); if (btn) { btn.disabled = true; btn.textContent = '⏳ সেভ হচ্ছে...'; }
+    try {
+      let authUid = s.authUid, lastPass = s.lastPass;
+      if (!hasAuth) {
+        authUid = await createPortalAccount(phone, newPass);
+        await writePortalLink(authUid, id, 'sr');
+        lastPass = newPass;
+      } else {
+        const mobileChanged = String(s.phone||'').replace(/[^0-9]/g,'') !== phone.replace(/[^0-9]/g,'');
+        if (mobileChanged) { await updatePortalMobile(s.phone, phone, lastPass); }
+        if (newPass) { await resetPortalPassword(phone, lastPass, newPass); lastPass = newPass; }
+      }
+      const idx = allSRs.findIndex(x => x.id === id);
+      if (idx >= 0) {
+        allSRs[idx] = { ...allSRs[idx], code, name, phone, area:v('es-area'),
+          salary:parseFloat(v('es-salary'))||0, commission:parseFloat(v('es-comm'))||2,
+          target:parseFloat(v('es-target'))||0, authUid, lastPass, updatedAt:new Date().toISOString() };
+        DB.set('srs', allSRs);
+      }
+      closeModal(); renderSRs(); populateSelects();
+      toast('SR তথ্য আপডেট হয়েছে! 💾');
+    } catch(e) {
+      console.error('SR/DM account update error:', e);
+      let msg = 'আপডেট ব্যর্থ হয়েছে: '+(e&&e.code?e.code:(e&&e.message?e.message:'অজানা ত্রুটি'));
+      if (e && e.code==='auth/email-already-in-use') msg = 'এই মোবাইল নাম্বার দিয়ে আগেই একটা অ্যাকাউন্ট আছে';
+      else if (e && e.code==='auth/wrong-password') msg = 'পুরনো পাসওয়ার্ড মিলছে না, ম্যানুয়ালি ঠিক করতে হবে';
+      else if (e && e.code==='auth/operation-not-allowed') msg = 'Firebase Console-এ Email/Password Sign-in method চালু নেই';
+      toast(msg, false);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '💾 সেভ করুন'; }
     }
-    closeModal(); renderSRs(); populateSelects();
-    toast('SR তথ্য আপডেট হয়েছে! 💾');
   };
   document.getElementById('mover').classList.add('open');
 }
@@ -6222,7 +6707,7 @@ function getNextDMCode() {
 }
 
 function renderDMs() {
-  const dms = DB.get('dms');
+  const dms = sortByCode(DB.get('dms'));
   document.getElementById('dm-body').innerHTML = dms.length
     ? dms.map(d => {
         const photoCell = d.photo
@@ -6232,7 +6717,7 @@ function renderDMs() {
         <td style="padding:6px 10px">${photoCell}</td>
         <td><span class="b bb">${d.code}</span></td>
         <td><b>${d.name}</b></td>
-        <td><a href="tel:${d.phone}" style="color:inherit;text-decoration:none">${d.phone||'—'}</a></td>
+        <td><a href="tel:${d.phone}" style="color:inherit;text-decoration:none">${d.phone||'—'}</a> ${d.authUid?'<span title="পোর্টাল লগইন অ্যাকাউন্ট আছে" style="color:var(--green)">✅</span>':'<span title="পোর্টাল লগইন অ্যাকাউন্ট নেই — Edit করে সেট করুন" style="color:var(--orange)">⚠️</span>'}</td>
         <td>${d.area||'—'}</td>
         <td class="r">${fmt(d.salary||0)}</td>
         <td>${d.note||'—'}</td>
@@ -6252,29 +6737,58 @@ function openEditDM(id) {
   const dms = DB.get('dms');
   const d = dms.find(x => x.id === id);
   if (!d) return;
+  const hasAuth = !!d.authUid;
   document.getElementById('m-title').textContent = '✏️ DM সম্পাদনা';
   document.getElementById('m-body').innerHTML = `<div class="g2">
     <div class="fg"><label>DM কোড *</label><input id="edm-code" value="${d.code}"></div>
     <div class="fg"><label>নাম *</label><input id="edm-name" value="${d.name}"></div>
-    <div class="fg"><label>মোবাইল</label><input id="edm-phone" value="${d.phone||''}" type="tel"></div>
+    <div class="fg"><label>মোবাইল * <span style="color:var(--t3);font-weight:400;font-size:13px">(এটাই লগইন আইডি)</span></label><input id="edm-phone" value="${d.phone||''}" type="tel"></div>
+    <div class="fg"><label>${hasAuth ? 'নতুন পাসওয়ার্ড (ঐচ্ছিক)' : 'পাসওয়ার্ড * (পোর্টাল অ্যাকাউন্ট নেই, তৈরি হবে)'}</label><input id="edm-pass" type="text" placeholder="${hasAuth?'খালি রাখলে পরিবর্তন হবে না':'কমপক্ষে ৪ অক্ষর'}"></div>
     <div class="fg"><label>এলাকা</label><input id="edm-area" value="${d.area||''}"></div>
     <div class="fg"><label>বেতন (৳)</label><input id="edm-salary" type="number" value="${d.salary||0}" min="0"></div>
     <div class="fg"><label>নোট</label><input id="edm-note" value="${d.note||''}"></div>
+    ${!hasAuth?'<div style="grid-column:1/-1;color:var(--orange);font-size:13px">⚠️ এই DM-এর এখনো পোর্টাল লগইন অ্যাকাউন্ট নেই — সেভ করলে মোবাইল+পাসওয়ার্ড দিয়ে তৈরি হবে।</div>':''}
   </div>`;
-  document.getElementById('m-save').onclick = () => {
-    const code = v('edm-code').trim(), name = v('edm-name').trim();
+  document.getElementById('m-save').onclick = async () => {
+    const code = v('edm-code').trim(), name = v('edm-name').trim(), phone = v('edm-phone').trim(), newPass = v('edm-pass').trim();
     if (!code || !name) { toast('কোড ও নাম দিন', false); return; }
+    if (!phone) { toast('মোবাইল নাম্বার দিন', false); return; }
     const allDMs = DB.get('dms');
     const conflict = allDMs.find(x => x.code === code && x.id !== id);
     if (conflict) { toast('এই কোড অন্য DM-এ ব্যবহার হয়েছে', false); return; }
-    const idx = allDMs.findIndex(x => x.id === id);
-    if (idx >= 0) {
-      allDMs[idx] = { ...allDMs[idx], code, name, phone:v('edm-phone'), area:v('edm-area'),
-        salary:parseFloat(v('edm-salary'))||0, note:v('edm-note'), updatedAt:new Date().toISOString() };
-      DB.set('dms', allDMs);
+    const phoneConflict = allDMs.find(x => x.id !== id && String(x.phone||'').replace(/[^0-9]/g,'')===phone.replace(/[^0-9]/g,''));
+    if (phoneConflict) { toast('এই মোবাইল নাম্বার অন্য DM-এ ব্যবহার হয়েছে', false); return; }
+    if (!hasAuth && (!newPass || newPass.length<4)) { toast('কমপক্ষে ৪ অক্ষরের পাসওয়ার্ড দিন', false); return; }
+    const btn = document.getElementById('m-save'); if (btn) { btn.disabled = true; btn.textContent = '⏳ সেভ হচ্ছে...'; }
+    try {
+      let authUid = d.authUid, lastPass = d.lastPass;
+      if (!hasAuth) {
+        authUid = await createPortalAccount(phone, newPass);
+        await writePortalLink(authUid, id, 'dm');
+        lastPass = newPass;
+      } else {
+        const mobileChanged = String(d.phone||'').replace(/[^0-9]/g,'') !== phone.replace(/[^0-9]/g,'');
+        if (mobileChanged) { await updatePortalMobile(d.phone, phone, lastPass); }
+        if (newPass) { await resetPortalPassword(phone, lastPass, newPass); lastPass = newPass; }
+      }
+      const idx = allDMs.findIndex(x => x.id === id);
+      if (idx >= 0) {
+        allDMs[idx] = { ...allDMs[idx], code, name, phone, area:v('edm-area'),
+          salary:parseFloat(v('edm-salary'))||0, note:v('edm-note'), authUid, lastPass, updatedAt:new Date().toISOString() };
+        DB.set('dms', allDMs);
+      }
+      closeModal(); renderDMs();
+      toast('DM তথ্য আপডেট হয়েছে! 💾');
+    } catch(e) {
+      console.error('SR/DM account update error:', e);
+      let msg = 'আপডেট ব্যর্থ হয়েছে: '+(e&&e.code?e.code:(e&&e.message?e.message:'অজানা ত্রুটি'));
+      if (e && e.code==='auth/email-already-in-use') msg = 'এই মোবাইল নাম্বার দিয়ে আগেই একটা অ্যাকাউন্ট আছে';
+      else if (e && e.code==='auth/wrong-password') msg = 'পুরনো পাসওয়ার্ড মিলছে না, ম্যানুয়ালি ঠিক করতে হবে';
+      else if (e && e.code==='auth/operation-not-allowed') msg = 'Firebase Console-এ Email/Password Sign-in method চালু নেই';
+      toast(msg, false);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '💾 সেভ করুন'; }
     }
-    closeModal(); renderDMs();
-    toast('DM তথ্য আপডেট হয়েছে! 💾');
   };
   document.getElementById('mover').classList.add('open');
 }
@@ -6497,15 +7011,40 @@ function payHistoryClose() {
   payHistoryShopId = null;
   document.getElementById('pay-history-modal').style.display = 'none';
 }
+function payDeleteEntry(payId) {
+  confirm2('এই আদায় এন্ট্রিটি মুছে ফেলবেন? এটি পূর্বাবস্থায় ফেরানো যাবে না।', () => {
+    const payments = (DB.get('payments') || []).filter(p => p.id !== payId);
+    DB.set('payments', payments);
+    toast('✅ আদায় এন্ট্রি মুছে ফেলা হয়েছে');
+    renderPayHistory();
+    renderOutstanding();
+  });
+}
 
 function renderPayHistory() {
   const sid = payHistoryShopId;
   const payments = (DB.get('payments') || []).filter(p => String(p.shopId) === String(sid)).sort((a,b) => b.date.localeCompare(a.date));
-  const totCash = payments.reduce((s,p) => s + (p.collected||p.amount||0), 0);
-  const totDiscount = payments.reduce((s,p) => s + (p.discount||0), 0);
-  const totTotal = payments.reduce((s,p) => s + (p.amount||0), 0);
+
+  // সব হিসাব calcOutstanding() থেকে নাও — একই সোর্স, মিল থাকবে
+  const _outMap = calcOutstanding();
+  const _shopOut = _outMap[sid] || {sales:0, cash:0, discount:0, out:0};
+  // মোট বকেয়া = sales (deliveries + manual_outstanding)
+  const totSales    = _shopOut.sales;
+  // মোট আদায় = deliveries cash + payments collected (calcOutstanding এ একসাথে আছে)
+  const totCash     = _shopOut.cash;
+  // মোট ছাড় = payments discount
+  const totDiscount = _shopOut.discount;
+  // অবশিষ্ট বকেয়া = calcOutstanding এর out (Math.max(0,...) সহ)
+  const remainingDue = _shopOut.out;
+
+  // payments table এর এন্ট্রি সংখ্যা (শুধু আলাদা payment এন্ট্রি, delivery cash নয়)
+  const payEntryCount = payments.length;
 
   document.getElementById('ph-summary').innerHTML = `
+    <div style="background:var(--s2);border-radius:8px;padding:8px 14px;font-size:14px">
+      <div style="color:var(--t3)">মোট বকেয়া</div>
+      <div style="font-weight:700;color:var(--cyan);font-size:18px">${fmt(totSales)}</div>
+    </div>
     <div style="background:var(--s2);border-radius:8px;padding:8px 14px;font-size:14px">
       <div style="color:var(--t3)">মোট আদায়</div>
       <div style="font-weight:700;color:var(--green);font-size:18px">${fmt(totCash)}</div>
@@ -6514,13 +7053,13 @@ function renderPayHistory() {
       <div style="color:var(--t3)">মোট ছাড়</div>
       <div style="font-weight:700;color:var(--orange);font-size:18px">${fmt(totDiscount)}</div>
     </div>
-    <div style="background:var(--s2);border-radius:8px;padding:8px 14px;font-size:14px">
-      <div style="color:var(--t3)">মোট সমন্বয়</div>
-      <div style="font-weight:700;color:var(--cyan);font-size:18px">${fmt(totTotal)}</div>
+    <div style="background:${remainingDue>0?'rgba(239,68,68,.12)':'rgba(16,185,129,.12)'};border:1px solid ${remainingDue>0?'rgba(239,68,68,.3)':'rgba(16,185,129,.3)'};border-radius:8px;padding:8px 14px;font-size:14px">
+      <div style="color:var(--t3)">অবশিষ্ট বকেয়া</div>
+      <div style="font-weight:700;color:${remainingDue>0?'var(--red)':'var(--green)'};font-size:18px">${remainingDue>0?fmt(remainingDue):'✅ ০'}</div>
     </div>
     <div style="background:var(--s2);border-radius:8px;padding:8px 14px;font-size:14px">
-      <div style="color:var(--t3)">এন্ট্রি সংখ্যা</div>
-      <div style="font-weight:700;font-size:18px">${payments.length} টি</div>
+      <div style="color:var(--t3)">মোট এন্ট্রি</div>
+      <div style="font-weight:700;font-size:18px">${payEntryCount} টি</div>
     </div>`;
 
   document.getElementById('ph-body').innerHTML = payments.length
@@ -6536,8 +7075,11 @@ function renderPayHistory() {
         <td style="padding:9px 8px;text-align:center">
           <button class="btn btn-gh btn-sm" style="padding:3px 10px;font-size:13px" onclick="payEditOpen(${p.id})">✏️</button>
         </td>
+        <td style="padding:9px 8px;text-align:center">
+          <button class="btn btn-d btn-sm" style="padding:3px 10px;font-size:13px" onclick="payDeleteEntry(${p.id})">🗑</button>
+        </td>
       </tr>`;}).join('')
-    : `<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--t3)">কোনো আদায় রেকর্ড নেই</td></tr>`;
+    : `<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--t3)">কোনো আদায় রেকর্ড নেই</td></tr>`;
 
   document.getElementById('ph-foot').innerHTML = payments.length ? `
     <tr style="background:var(--s2);font-weight:700">
@@ -6612,18 +7154,26 @@ function renderReport() {
 
   let tSales=0,tCost=0,tCash=0,tRetVal=0,zeroBuyCnt=0;
   const pMap={}, srMap={};
+  // পণ্যভিত্তিক buy price ক্যাশ (fallback এর জন্য)
+  const prodBuyCacheR={};
+  prods.forEach(p=>{
+    prodBuyCacheR[p.id]=(p.buy||0);
+  });
+
   list.forEach(d=>{
     const net=d.delivered-d.returned;
     const sale=net*(d.price||0);
     const hasBuy=(d.buy!=null&&d.buy>0);
-    const cost=hasBuy?net*d.buy:0;
-    if(!hasBuy) zeroBuyCnt++;
+    // পুরনো রেকর্ডে buy না থাকলে বর্তমান পণ্যের buy price ব্যবহার করো (fallback)
+    const buyPricePerPcs=hasBuy?d.buy:(prodBuyCacheR[d.prodId]||0);
+    const cost=buyPricePerPcs>0?net*buyPricePerPcs:0;
+    if(!hasBuy && buyPricePerPcs<=0) zeroBuyCnt++;
     tSales+=sale; tCost+=cost; tCash+=(d.cash||0); tRetVal+=(d.returned||0)*(d.price||0);
     const pname=byId(prods,d.prodId).name||'?';
     if(!pMap[pname]) pMap[pname]={del:0,ret:0,rev:0,cost:0,noBuy:false};
     pMap[pname].del+=d.delivered; pMap[pname].ret+=d.returned;
     pMap[pname].rev+=sale; pMap[pname].cost+=cost;
-    if(!hasBuy) pMap[pname].noBuy=true;
+    if(!hasBuy && buyPricePerPcs<=0) pMap[pname].noBuy=true;
     const sname=byId(srs,d.srId).name||'?';
     if(!srMap[sname]) srMap[sname]={sales:0,ret:0,cash:0};
     srMap[sname].sales+=sale; srMap[sname].ret+=d.returned; srMap[sname].cash+=(d.cash||0);
@@ -6766,21 +7316,44 @@ const modalForms = {
       return `<div class="g2">
       <div class="fg"><label>SR কোড *</label><input id="mf-code" placeholder="SR004" value="${nextCode}"></div>
       <div class="fg"><label>SR নাম *</label><input id="mf-name" placeholder="মোঃ নাম"></div>
-      <div class="fg"><label>মোবাইল</label><input id="mf-phone" placeholder="01X-XXXXXXXX"></div>
+      <div class="fg"><label>মোবাইল * <span style="color:var(--t3);font-weight:400;font-size:13px">(এটাই লগইন আইডি হবে)</span></label><input id="mf-phone" type="tel" placeholder="01XXXXXXXXX"></div>
+      <div class="fg"><label>পাসওয়ার্ড * <span style="color:var(--t3);font-weight:400;font-size:13px">(SR পোর্টালে লগইনের জন্য)</span></label><input id="mf-srpass" type="text" placeholder="কমপক্ষে ৪ অক্ষর"></div>
       <div class="fg"><label>এলাকা/রুট</label><input id="mf-area" placeholder="এলাকার নাম"></div>
       <div class="fg"><label>বেতন (৳)</label><input id="mf-salary" type="number" min="0"></div>
       <div class="fg"><label>কমিশন %</label><input id="mf-comm" type="number" value="2" min="0" max="100"></div>
       <div class="fg"><label>মাসিক টার্গেট (৳)</label><input id="mf-target" type="number" min="0"></div>
     </div>`;
     },
-    save: () => {
-      const code=v('mf-code'),name=v('mf-name');
+    save: async () => {
+      const code=v('mf-code'),name=v('mf-name'),phone=v('mf-phone').trim(),pass=v('mf-srpass').trim();
       if(!code||!name){toast('কোড ও নাম দিন',false);return;}
+      if(!phone){toast('মোবাইল নাম্বার দিন (এটাই লগইন আইডি)',false);return;}
+      if(!pass||pass.length<4){toast('কমপক্ষে ৪ অক্ষরের পাসওয়ার্ড দিন',false);return;}
       const srs=DB.get('srs');
       if(srs.find(s=>s.code===code)){toast('এই কোড আগে ব্যবহার হয়েছে',false);return;}
-      srs.push({id:DB.nextId('srs'),code,name,phone:v('mf-phone'),area:v('mf-area'),salary:parseFloat(v('mf-salary'))||0,commission:parseFloat(v('mf-comm'))||2,target:parseFloat(v('mf-target'))||0});
-      DB.set('srs',srs); closeModal(); renderSRs(); populateSelects();
-      toast('SR যোগ হয়েছে!');
+      if(srs.find(s=>String(s.phone||'').replace(/[^0-9]/g,'')===phone.replace(/[^0-9]/g,''))){toast('এই মোবাইল নাম্বার আগে থেকেই একজন SR-এর সাথে যুক্ত',false);return;}
+      const btn=document.getElementById('m-save'); if(btn){btn.disabled=true;btn.textContent='⏳ অ্যাকাউন্ট তৈরি হচ্ছে...';}
+      try{
+        const uid = await createPortalAccount(phone, pass);
+        const newId = DB.nextId('srs');
+        srs.push({id:newId,code,name,phone,area:v('mf-area'),salary:parseFloat(v('mf-salary'))||0,commission:parseFloat(v('mf-comm'))||2,target:parseFloat(v('mf-target'))||0,authUid:uid,lastPass:pass});
+        DB.set('srs',srs);
+        await writePortalLink(uid, newId, 'sr');
+        closeModal(); renderSRs(); populateSelects();
+        toast('SR যোগ হয়েছে! এখন মোবাইল+পাসওয়ার্ড দিয়ে SR পোর্টালে লগইন করতে পারবে।');
+      }catch(e){
+        console.error('SR account create error:', e);
+        let msg='অ্যাকাউন্ট তৈরি ব্যর্থ: '+(e&&e.code?e.code:(e&&e.message?e.message:'অজানা ত্রুটি'));
+        if(e&&e.code==='auth/email-already-in-use')msg='এই মোবাইল নাম্বার দিয়ে আগেই অ্যাকাউন্ট আছে। Firebase Console → Authentication থেকে মুছে আবার চেষ্টা করুন।';
+        else if(e&&e.code==='auth/weak-password')msg='পাসওয়ার্ড খুবই দুর্বল — কমপক্ষে ৬ অক্ষর দিন';
+        else if(e&&e.code==='auth/operation-not-allowed')msg='⚠️ Firebase Console → Authentication → Sign-in method → Email/Password → ENABLE করুন';
+        else if(e&&e.code==='auth/network-request-failed')msg='ইন্টারনেট সংযোগ নেই, আবার চেষ্টা করুন';
+        else if(e&&e.message&&e.message.includes('Auth SDK'))msg=e.message;
+        console.error('Portal account error:', e);
+        toast(msg,false);
+      }finally{
+        if(btn){btn.disabled=false;btn.textContent='💾 সেভ করুন';}
+      }
     }
   },
   dm: {
@@ -6790,20 +7363,43 @@ const modalForms = {
       return `<div class="g2">
       <div class="fg"><label>DM কোড *</label><input id="mf-code" placeholder="DM001" value="${nextCode}"></div>
       <div class="fg"><label>নাম *</label><input id="mf-name" placeholder="মোঃ নাম"></div>
-      <div class="fg"><label>মোবাইল</label><input id="mf-phone" placeholder="01X-XXXXXXXX"></div>
+      <div class="fg"><label>মোবাইল * <span style="color:var(--t3);font-weight:400;font-size:13px">(এটাই লগইন আইডি হবে)</span></label><input id="mf-phone" type="tel" placeholder="01XXXXXXXXX"></div>
+      <div class="fg"><label>পাসওয়ার্ড * <span style="color:var(--t3);font-weight:400;font-size:13px">(Delivery পোর্টালে লগইনের জন্য)</span></label><input id="mf-dmpass" type="text" placeholder="কমপক্ষে ৪ অক্ষর"></div>
       <div class="fg"><label>এলাকা</label><input id="mf-area" placeholder="এলাকার নাম"></div>
       <div class="fg"><label>বেতন (৳)</label><input id="mf-salary" type="number" min="0"></div>
       <div class="fg"><label>নোট</label><input id="mf-note" placeholder="ঐচ্ছিক"></div>
     </div>`;
     },
-    save: () => {
-      const code=v('mf-code'),name=v('mf-name');
+    save: async () => {
+      const code=v('mf-code'),name=v('mf-name'),phone=v('mf-phone').trim(),pass=v('mf-dmpass').trim();
       if(!code||!name){toast('কোড ও নাম দিন',false);return;}
+      if(!phone){toast('মোবাইল নাম্বার দিন (এটাই লগইন আইডি)',false);return;}
+      if(!pass||pass.length<4){toast('কমপক্ষে ৪ অক্ষরের পাসওয়ার্ড দিন',false);return;}
       const dms=DB.get('dms');
       if(dms.find(d=>d.code===code)){toast('এই কোড আগে ব্যবহার হয়েছে',false);return;}
-      dms.push({id:DB.nextId('dms'),code,name,phone:v('mf-phone'),area:v('mf-area'),salary:parseFloat(v('mf-salary'))||0,note:v('mf-note')});
-      DB.set('dms',dms); closeModal(); renderDMs();
-      toast('DM যোগ হয়েছে!');
+      if(dms.find(d=>String(d.phone||'').replace(/[^0-9]/g,'')===phone.replace(/[^0-9]/g,''))){toast('এই মোবাইল নাম্বার আগে থেকেই একজন DM-এর সাথে যুক্ত',false);return;}
+      const btn=document.getElementById('m-save'); if(btn){btn.disabled=true;btn.textContent='⏳ অ্যাকাউন্ট তৈরি হচ্ছে...';}
+      try{
+        const uid = await createPortalAccount(phone, pass);
+        const newId = DB.nextId('dms');
+        dms.push({id:newId,code,name,phone,area:v('mf-area'),salary:parseFloat(v('mf-salary'))||0,note:v('mf-note'),authUid:uid,lastPass:pass});
+        DB.set('dms',dms);
+        await writePortalLink(uid, newId, 'dm');
+        closeModal(); renderDMs();
+        toast('DM যোগ হয়েছে! এখন মোবাইল+পাসওয়ার্ড দিয়ে Delivery পোর্টালে লগইন করতে পারবে।');
+      }catch(e){
+        console.error('SR account create error:', e);
+        let msg='অ্যাকাউন্ট তৈরি ব্যর্থ: '+(e&&e.code?e.code:(e&&e.message?e.message:'অজানা ত্রুটি'));
+        if(e&&e.code==='auth/email-already-in-use')msg='এই মোবাইল নাম্বার দিয়ে আগেই অ্যাকাউন্ট আছে। Firebase Console → Authentication থেকে মুছে আবার চেষ্টা করুন।';
+        else if(e&&e.code==='auth/weak-password')msg='পাসওয়ার্ড খুবই দুর্বল — কমপক্ষে ৬ অক্ষর দিন';
+        else if(e&&e.code==='auth/operation-not-allowed')msg='⚠️ Firebase Console → Authentication → Sign-in method → Email/Password → ENABLE করুন';
+        else if(e&&e.code==='auth/network-request-failed')msg='ইন্টারনেট সংযোগ নেই, আবার চেষ্টা করুন';
+        else if(e&&e.message&&e.message.includes('Auth SDK'))msg=e.message;
+        console.error('Portal account error:', e);
+        toast(msg,false);
+      }finally{
+        if(btn){btn.disabled=false;btn.textContent='💾 সেভ করুন';}
+      }
     }
   },
   shop: {
@@ -6818,7 +7414,7 @@ const modalForms = {
         <div class="fg"><label>দোকান কোড *</label><input id="mf-code" placeholder="S007" value="${nextCode}"></div>
         <div class="fg"><label>দোকানের নাম *</label><input id="mf-name" placeholder="দোকানের নাম"></div>
         <div class="fg"><label>মালিকের নাম</label><input id="mf-owner" placeholder="মালিকের নাম"></div>
-        <div class="fg"><label>মোবাইল</label><input id="mf-phone" placeholder="01X"></div>
+        <div class="fg"><label>মোবাইল</label><input id="mf-phone" type="tel" placeholder="01X"></div>
         <div class="fg"><label>এলাকা</label><input id="mf-area" placeholder="এলাকার নাম"></div>
         <div class="fg"><label>SR নির্বাচন</label>
           <select id="mf-sr"><option value="">— SR বেছে নিন —</option>${srs.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select>
@@ -7188,12 +7784,24 @@ function downloadDeliveryPDF() {
   let list=DB.get('deliveries').filter(d=>(!from||d.date>=from)&&(!to||d.date<=to));
   list.sort((a,b)=>a.date.localeCompare(b.date));
   const srs=DB.get('srs'),shops=DB.get('shops'),prods=DB.get('products');
+  // পণ্যের বর্তমান buy price ক্যাশ (পুরনো রেকর্ডের fallback)
+  const prodBuyCache={}, prodSellCache={};
+  prods.forEach(p=>{
+    prodBuyCache[p.id]=(p.buy||0);
+    prodSellCache[p.id]=(p.price||0);
+  });
   const dateRange = (from&&to) ? `${fmtD(from)} — ${fmtD(to)}` : today();
-  let tD=0,tR=0,tS=0,tC=0;
+  let tD=0,tR=0,tS=0,tC=0,tTotalCost=0;
   const rows = list.map(d=>{
     const shop=byId(shops,d.shopId);
     const net=d.delivered-d.returned, sale=net*d.price, out=sale-d.cash;
-    tD+=d.delivered; tR+=d.returned; tS+=sale; tC+=d.cash;
+    // ক্রয়মূল্য: রেকর্ডে থাকলে সেটা, না হলে পণ্যের বর্তমান buy price
+    const buyPrc=(d.buy!=null&&d.buy>0)?d.buy:(prodBuyCache[d.prodId]||0);
+    const sellPrc=d.price||0;  // ডেলিভারির সময়ের বিক্রয়মূল্য
+    const totalCost=buyPrc*net;  // মোট ক্রয়মূল্য = ক্রয়মূল্য × নিট পিস
+    const rowProfit=sale-totalCost;  // লাভ = মোট বিক্রয় − মোট ক্রয়মূল্য
+    const isFallback=(d.buy==null||d.buy<=0);
+    tD+=d.delivered; tR+=d.returned; tS+=sale; tC+=d.cash; tTotalCost+=totalCost;
     return `<tr>
       <td class="col-date">${fmtD(d.date)}</td>
       <td class="col-sr">${(byId(srs,d.srId).name||'—')}</td>
@@ -7205,9 +7813,14 @@ function downloadDeliveryPDF() {
       <td class="col-num" style="text-align:right">${d.delivered}</td>
       <td class="col-ret" style="text-align:right;color:${d.returned>0?'red':'#333'}">${d.returned}</td>
       <td class="col-del" style="text-align:right"><b>${net}</b></td>
-      <td class="col-sale" style="text-align:right">৳${sale.toLocaleString('en-IN')}</td>
+      <td class="col-buy" style="text-align:right;color:#c0392b">৳${buyPrc.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}${isFallback?'<span style="color:#e67e22;font-size:9px"> *</span>':''}</td>
+      <td class="col-sell" style="text-align:right;color:#1a6b2e">৳${sellPrc.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td class="col-tcost" style="text-align:right;color:#c0392b">৳${totalCost.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}${isFallback?'<span style="color:#e67e22;font-size:9px"> *</span>':''}</td>
+      <td class="col-sale" style="text-align:right;font-weight:bold">৳${sale.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td class="col-profit" style="text-align:right;font-weight:bold;color:${rowProfit>=0?'#1a6b2e':'red'}">৳${rowProfit.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td class="col-pct" style="text-align:right;font-weight:bold;color:${rowProfit>=0?'#1a6b2e':'red'}">${sale>0?(rowProfit/sale*100).toFixed(1):0}%</td>
       <td class="col-cash" style="text-align:right">৳${d.cash.toLocaleString('en-IN')}</td>
-      <td class="col-due" style="text-align:right;color:${out>0?'red':'green'}">৳${out.toLocaleString('en-IN')}</td>
+      <td class="col-due" style="text-align:right;color:${out>0?'red':'green'}">৳${out.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
       <td class="col-note">${d.note||''}</td>
     </tr>`;
   }).join('');
@@ -7215,18 +7828,19 @@ function downloadDeliveryPDF() {
   const html = `<!DOCTYPE html><html lang="bn">
 <head><meta charset="UTF-8">
 <style>
-  body{font-family:'Hind Siliguri',Arial,sans-serif;font-size:11.5px;color:#111;padding:12px}
+  body{font-family:'Hind Siliguri',Arial,sans-serif;font-size:11px;color:#111;padding:12px}
   h2{text-align:center;margin-bottom:4px;font-size:21px}
-  .sub{text-align:center;color:#555;margin-bottom:14px;font-size:14px}
+  .sub{text-align:center;color:#555;margin-bottom:14px;font-size:13px}
+  .note-legend{font-size:10px;color:#e67e22;margin-bottom:10px;text-align:right}
   table{width:100%;border-collapse:collapse;table-layout:auto}
-  th{background:#163a1f;color:#fff;padding:6px 5px;text-align:center;font-size:11px;white-space:nowrap}
-  td{padding:5px 5px;border-bottom:1px solid #ddd;font-size:11px;vertical-align:middle;text-align:left}
-  td.col-date,td.col-sr,td.col-phone,td.col-num,td.col-ret,td.col-del,td.col-sale,td.col-cash,td.col-due{white-space:nowrap}
-  td.col-shop,td.col-loc,td.col-owner,td.col-note{white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:60px}
-  td.col-prod{white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:120px}
-  td.col-note{min-width:90px}
+  th{background:#163a1f;color:#fff;padding:6px 4px;text-align:center;font-size:10.5px;white-space:nowrap}
+  td{padding:4px 4px;border-bottom:1px solid #ddd;font-size:10.5px;vertical-align:middle;text-align:left}
+  td.col-date,td.col-sr,td.col-phone,td.col-num,td.col-ret,td.col-del,td.col-buy,td.col-sell,td.col-tcost,td.col-sale,td.col-profit,td.col-pct,td.col-cash,td.col-due{white-space:nowrap}
+  td.col-shop,td.col-loc,td.col-owner,td.col-note{white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:55px}
+  td.col-prod{white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:110px}
+  td.col-note{min-width:80px}
   tr:nth-child(even){background:#f5fff8}
-  tfoot td{background:#e8f5e9;font-weight:bold;font-size:12px}
+  tfoot td{background:#e8f5e9;font-weight:bold;font-size:11px}
   @media print{
     body{padding:6px}
     @page{size:A4 landscape;margin:8mm 6mm}
@@ -7238,18 +7852,23 @@ function downloadDeliveryPDF() {
 <body>
 <h2>🚚 ডেলিভারি ও রিটার্ন তালিকা</h2>
 <div class="sub">তারিখ: ${dateRange} | মোট: ${list.length}টি এন্ট্রি</div>
+<div class="note-legend">* চিহ্নিত = রেকর্ডে ক্রয়মূল্য ছিল না, পণ্য তালিকার বর্তমান মূল্য ব্যবহৃত হয়েছে</div>
 <table>
-
-  <thead><tr><th>তারিখ</th><th>SR</th><th>দোকান</th><th>লোকেশন</th><th>মালিক</th><th>মোবাইল</th><th>পণ্য</th><th>অর্ডার</th><th>রিটার্ন</th><th>ডেলিভারি</th><th>বিক্রয়(৳)</th><th>নগদ(৳)</th><th>বাকি(৳)</th><th>নোট</th></tr></thead>
+  <thead><tr><th>তারিখ</th><th>SR</th><th>দোকান</th><th>লোকেশন</th><th>মালিক</th><th>মোবাইল</th><th>পণ্য</th><th>অর্ডার</th><th>রিটার্ন</th><th>ডেলিভারি</th><th>ক্রয়মূল্য(৳)</th><th>বিক্রয়মূল্য(৳)</th><th>মোট ক্রয়মূল্য(৳)</th><th>মোট বিক্রয়(৳)</th><th>লাভ(৳)</th><th>লাভ%</th><th>নগদ(৳)</th><th>বাকি(৳)</th><th>নোট</th></tr></thead>
   <tbody>${rows}</tbody>
   <tfoot><tr>
     <td colspan="7">মোট</td>
     <td style="text-align:right">${tD}</td>
     <td style="text-align:right;color:red">${tR}</td>
     <td style="text-align:right">${tD-tR}</td>
-    <td style="text-align:right">৳${tS.toLocaleString('en-IN')}</td>
+    <td></td>
+    <td></td>
+    <td style="text-align:right;color:#c0392b">৳${tTotalCost.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    <td style="text-align:right">৳${tS.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    <td style="text-align:right;color:${(tS-tTotalCost)>=0?'#1a6b2e':'red'};font-weight:bold">৳${(tS-tTotalCost).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    <td style="text-align:right;color:${(tS-tTotalCost)>=0?'#1a6b2e':'red'};font-weight:bold">${tS>0?((tS-tTotalCost)/tS*100).toFixed(1):0}%</td>
     <td style="text-align:right">৳${tC.toLocaleString('en-IN')}</td>
-    <td style="text-align:right;color:red">৳${(tS-tC).toLocaleString('en-IN')}</td>
+    <td style="text-align:right;color:red">৳${(tS-tC).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
     <td></td>
   </tr></tfoot>
 </table>
@@ -7300,25 +7919,28 @@ function exportData() {
     exportViaDataURI(json, filename);
   };
 
-  FDB.ref('data').once('value').then(snap => {
-    const fbData = snap.val() || {};
+  // প্রতিটা টেবিল আলাদাভাবে, parallel-এ fetch করো — সিকোয়েন্সিয়াল না হয়ে দ্রুত হবে
+  const tablePromises = TABLES.map(k =>
+    bizRef('data/' + k).once('value')
+      .then(snap => {
+        const raw = snap.val();
+        return { key: k, val: raw ? (Array.isArray(raw) ? raw : Object.values(raw)) : DB.get(k) };
+      })
+      .catch(() => ({ key: k, val: DB.get(k) }))
+  );
+  const lpPromise = bizRef('lp').once('value')
+    .then(snap => snap.val() || C.get('lp') || {})
+    .catch(() => C.get('lp') || {});
+
+  Promise.all([...tablePromises, lpPromise]).then(results => {
+    const lp = results.pop(); // শেষ আইটেমটা lp
     const data = {};
-    TABLES.forEach(k => {
-      const raw = fbData[k];
-      data[k] = raw ? (Array.isArray(raw) ? raw : Object.values(raw)) : DB.get(k);
-    });
-    FDB.ref('lp').once('value').then(lpSnap => {
-      data._lockedPrices = lpSnap.val() || C.get('lp') || {};
-      data._backupDate   = new Date().toISOString();
-      data._version      = 'firebase-v1';
-      toast('✅ ব্যাকআপ প্রস্তুত!');
-      buildAndDownload(data);
-    }).catch(() => {
-      data._lockedPrices = C.get('lp') || {};
-      data._backupDate   = new Date().toISOString();
-      data._version      = 'firebase-v1';
-      buildAndDownload(data);
-    });
+    results.forEach(r => { data[r.key] = r.val; });
+    data._lockedPrices = lp;
+    data._backupDate   = new Date().toISOString();
+    data._version      = 'firebase-v1-parallel';
+    toast('✅ ব্যাকআপ প্রস্তুত!');
+    buildAndDownload(data);
   }).catch(() => {
     toast('🟠 অফলাইন — Cache থেকে ব্যাকআপ হচ্ছে...');
     const data = {};
@@ -7387,14 +8009,14 @@ function importData(input) {
       // ── Locked Prices রিস্টোর ──
       if (data._lockedPrices) {
         C.set('lp', data._lockedPrices);
-        if (fbOnline) FDB.ref('lp').set(data._lockedPrices).catch(e=>{});
+        if (fbOnline) bizRef('lp').set(data._lockedPrices).catch(e=>{});
       }
 
       // ── Firebase-এ push করো (সব ডিভাইসে sync) ──
       if (fbOnline) {
         const pushData = {};
         TABLES.forEach(k => { if (data[k]) pushData[k] = data[k]; });
-        FDB.ref('data').update(pushData)
+        bizRef('data').update(pushData)
           .then(() => {
             toast('✅ রিস্টোর সফল! Firebase-এ সব ডিভাইসে sync হয়েছে 🔥');
           })
@@ -7668,7 +8290,7 @@ function admSaveDirectSale(){
       prodId:item.prodId,
       ordered:item.qty,delivered:item.qty,returned:0,
       price:item.price,
-      buy:(pidx>=0?(prods[pidx].buy/(parseInt(prods[pidx].pcsPerUnit)||1)):0),
+      buy:(pidx>=0?(prods[pidx].buy||0):0),
       cash:i===0?cash:0,
       note:note,
       directSale:true
@@ -7755,7 +8377,7 @@ function renderOrderProductSummary() {
     let _uch='';if(qty>0&&_ppu>1){const u=Math.floor(qty/_ppu),r=qty%_ppu;const h=u>0&&r>0?`${u} ${_unit} ${r} পিস`:u>0?`${u} ${_unit}`:`${r} পিস`;_uch=`<div style="font-size:10px;color:var(--blue);font-weight:600;margin-top:2px">${h}</div>`;}
     const isStruck = struckSet.has(String(prodId));
     return `<div class="ops-item ops-item-toggle${isStruck?' ops-struck':''}" onclick="toggleAdmOpsStrike(this,'${prodId}')" style="cursor:pointer;user-select:none;transition:all .2s${isStruck?';opacity:.45':''}">
-      <div class="ops-name" style="${isStruck?'text-decoration:line-through;color:var(--t3)':''}">${prod.name||'?'}</div>
+      <div class="ops-name${isStruck?' ops-name-struck':''}" style="${isStruck?'color:var(--t3)':''}">${prod.name||'?'}</div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">
         <div style="display:flex;align-items:baseline;gap:3px">
           <span class="ops-qty" style="${isStruck?'text-decoration:line-through;color:var(--t3)':''}">${qty}</span>
@@ -7778,14 +8400,14 @@ function toggleAdmOpsStrike(el, pid) {
     struckSet.delete(String(pid));
     el.style.opacity = '';
     el.classList.remove('ops-struck');
-    const nm = el.querySelector('.ops-name'); if (nm) { nm.style.textDecoration=''; nm.style.color=''; }
+    const nm = el.querySelector('.ops-name'); if (nm) { nm.classList.remove('ops-name-struck'); nm.style.color=''; }
     const qs = el.querySelector('.ops-qty'); if (qs) { qs.style.textDecoration=''; qs.style.color=''; }
     const ck = el.querySelector('.ops-ck'); if (ck) ck.remove();
   } else {
     struckSet.add(String(pid));
     el.style.opacity = '.45';
     el.classList.add('ops-struck');
-    const nm = el.querySelector('.ops-name'); if (nm) { nm.style.textDecoration='line-through'; nm.style.color='var(--t3)'; }
+    const nm = el.querySelector('.ops-name'); if (nm) { nm.classList.add('ops-name-struck'); nm.style.color='var(--t3)'; }
     const qs = el.querySelector('.ops-qty'); if (qs) { qs.style.textDecoration='line-through'; qs.style.color='var(--t3)'; }
     if (!el.querySelector('.ops-ck')) {
       const ck = document.createElement('span'); ck.className='ops-ck'; ck.style.cssText='font-size:16px;margin-left:4px'; ck.textContent='✅';
@@ -8054,7 +8676,7 @@ function dvSave() {
       delivered: grossDel,
       returned:  ret_clamped,
       price:     item.price,
-      buy:       pidx >= 0 ? prods[pidx].buy / (parseInt(prods[pidx].pcsPerUnit)||1) : 0,
+      buy:       pidx >= 0 ? (prods[pidx].buy||0) : 0,
       cash:      i === 0 ? cash : 0,
       note:      note,
       createdAt: new Date().toISOString()
@@ -8153,93 +8775,145 @@ function setDateDefaults(dateIds=[], fromIds=[], toIds=[]) {
 //  ADMIN LOGIN SYSTEM
 // ══════════════════════════════════════════
 const ADMIN_SESS = 'dm_admin_session';
+let currentAdminUser = null;
 
-function checkAdminLogin() {
-  const input = document.getElementById('admin-pass-input').value;
-  const adminPass = localStorage.getItem('dm_admin_pass') || 'admin123';
-  if (input === adminPass) {
-    sessionStorage.setItem(ADMIN_SESS, '1');
-    document.getElementById('admin-login-screen').style.display = 'none';
-    document.getElementById('sb').style.display = '';
-    document.getElementById('main').style.display = '';
-    renderDash();
-  } else {
-    document.getElementById('admin-login-err').style.display = 'block';
-    document.getElementById('admin-pass-input').value = '';
-    document.getElementById('admin-pass-input').focus();
-  }
+function showRegisterForm() {
+  document.getElementById('login-form-block').style.display = 'none';
+  document.getElementById('register-form-block').style.display = 'block';
+  document.getElementById('admin-login-err').style.display = 'none';
 }
+function showLoginForm() {
+  document.getElementById('register-form-block').style.display = 'none';
+  document.getElementById('login-form-block').style.display = 'block';
+  document.getElementById('reg-err').style.display = 'none';
+}
+
+// ══════════════════════════════════════════
+//  FIREBASE AUTH LOGIN (Dealer-Vai SaaS)
+//  প্রতিটা admin login করলে তার Firebase Auth UID
+//  ই হয়ে যায় BIZ_ID — এভাবে প্রতিটা business এর
+//  data সম্পূর্ণ আলাদা থাকে।
+// ══════════════════════════════════════════
+function checkAdminLogin() {
+  const email = (document.getElementById('admin-email-input') || {}).value || '';
+  const pass  = document.getElementById('admin-pass-input').value;
+  const errEl = document.getElementById('admin-login-err');
+  const btnEl = document.getElementById('admin-login-btn');
+
+  if (!email || !pass) {
+    if (errEl) { errEl.textContent = '❌ ইমেইল ও পাসওয়ার্ড দিন!'; errEl.style.display = 'block'; }
+    return;
+  }
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = '⏳ লগইন হচ্ছে...'; }
+  if (errEl) errEl.style.display = 'none';
+
+  if (!FAUTH) {
+    if (errEl) { errEl.textContent = '❌ Firebase সংযুক্ত নেই, একটু পর আবার চেষ্টা করুন'; errEl.style.display = 'block'; }
+    if (btnEl) { btnEl.disabled = false; btnEl.textContent = '🔐 লগইন করুন'; }
+    return;
+  }
+
+  FAUTH.signInWithEmailAndPassword(email, pass)
+    .then(cred => {
+      currentAdminUser = cred.user;
+      BIZ_ID = cred.user.uid; // ← এটাই multi-tenant এর মূল চাবিকাঠি
+      sessionStorage.setItem(ADMIN_SESS, cred.user.uid);
+      document.getElementById('admin-login-screen').style.display = 'none';
+      document.getElementById('sb').style.display = '';
+      document.getElementById('main').style.display = '';
+      const userInfoEl = document.getElementById('admin-user-info');
+      if (userInfoEl) { userInfoEl.textContent = cred.user.email || 'Admin'; userInfoEl.style.display = ''; }
+      checkSubscriptionAndRender();
+    })
+    .catch(err => {
+      let msg = '❌ লগইন ব্যর্থ হয়েছে!';
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') msg = '❌ ইমেইল বা পাসওয়ার্ড ভুল!';
+      else if (err.code === 'auth/too-many-requests') msg = '❌ অনেকবার চেষ্টা হয়েছে, কিছুক্ষণ পর আবার চেষ্টা করুন।';
+      if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = '🔐 লগইন করুন'; }
+    });
+}
+
+function adminRegister() {
+  const biz   = (document.getElementById('r-biz')   || {}).value || '';
+  const name  = (document.getElementById('r-name')  || {}).value || '';
+  const phone = (document.getElementById('r-phone') || {}).value || '';
+  const email = (document.getElementById('r-email') || {}).value || '';
+  const pass  = (document.getElementById('r-pass')  || {}).value || '';
+  const errEl = document.getElementById('reg-err');
+
+  if (!biz || !name || phone.length < 11 || !email || pass.length < 6) {
+    if (errEl) { errEl.textContent = '❌ সব ঘর সঠিকভাবে পূরণ করুন (পাসওয়ার্ড কমপক্ষে ৬ অক্ষর)'; errEl.style.display = 'block'; }
+    return;
+  }
+  if (!FAUTH) {
+    if (errEl) { errEl.textContent = '❌ Firebase সংযুক্ত নেই'; errEl.style.display = 'block'; }
+    return;
+  }
+
+  FAUTH.createUserWithEmailAndPassword(email, pass)
+    .then(cred => {
+      const uid = cred.user.uid;
+      BIZ_ID = uid;
+      // নতুন business এর meta তৈরি করো — ১৪ দিনের ট্রায়াল
+      const trialEnds = new Date(Date.now() + 14*24*60*60*1000).toISOString();
+      const metaUpdate = {};
+      metaUpdate['businesses/' + uid + '/meta'] = {
+        businessName: biz, ownerName: name, phone: '+88' + phone.replace('+88',''),
+        email: email, plan: 'trial', trialEnds: trialEnds,
+        createdAt: new Date().toISOString()
+      };
+      FDB.ref().update(metaUpdate).finally(() => {
+        currentAdminUser = cred.user;
+        sessionStorage.setItem(ADMIN_SESS, uid);
+        location.reload();
+      });
+    })
+    .catch(err => {
+      let msg = '❌ নিবন্ধন ব্যর্থ হয়েছে';
+      if (err.code === 'auth/email-already-in-use') msg = '❌ এই ইমেইলে আগেই অ্যাকাউন্ট আছে';
+      else if (err.code === 'auth/weak-password') msg = '❌ পাসওয়ার্ড দুর্বল';
+      if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+    });
+}
+
 function adminLogout() {
-  if (confirm('লগআউট করবেন?')) { sessionStorage.removeItem(ADMIN_SESS); location.reload(); }
+  if (confirm('লগআউট করবেন?')) {
+    if (FAUTH) FAUTH.signOut().catch(()=>{});
+    BIZ_ID = null;
+    currentAdminUser = null;
+    sessionStorage.removeItem(ADMIN_SESS);
+    location.reload();
+  }
 }
 
 // ── PASSWORD MANAGER ──
+// নোট: SR/DM পাসওয়ার্ড এখন আর এখানে সরাসরি বদলায় না — Firebase Auth
+// অ্যাকাউন্টের সাথে যুক্ত, তাই SR/DM লিস্ট পেজে ✏️ Edit থেকে বদলাতে হবে।
 function initPwMgr() {
   document.getElementById('pw-admin-current').value = localStorage.getItem('dm_admin_pass') || 'admin123';
-  // SR individual passwords
+  // SR অ্যাকাউন্ট স্ট্যাটাস (পাসওয়ার্ড বদলাতে SR লিস্টে Edit করুন)
   const srs = DB.get('srs');
   const srList = document.getElementById('sr-pass-list');
   if (srList) {
-    srList.innerHTML = srs.length ? srs.map(s => {
-      const key = 'dm_sr_pass_' + s.id;
-      const cur = localStorage.getItem(key) || localStorage.getItem('dm_sr_pass') || 'sr1234';
-      return `<div style="background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.15);border-radius:8px;padding:10px 12px">
-        <div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:7px">👤 ${s.name} <span style="font-size:12px;color:var(--t3);font-weight:400">(${s.code})</span></div>
-        <div class="g2">
-          <div class="fg" style="margin:0"><label style="font-size:13px">বর্তমান পাসওয়ার্ড</label>
-            <input type="text" id="pw-sr-cur-${s.id}" value="${cur}" readonly style="background:rgba(74,222,128,.06);color:var(--green);font-size:15px"></div>
-          <div class="fg" style="margin:0"><label style="font-size:13px">নতুন পাসওয়ার্ড</label>
-            <input type="password" id="pw-sr-new-${s.id}" placeholder="নতুন পাসওয়ার্ড" style="font-size:15px"></div>
-        </div>
-        <button class="btn btn-sm" style="background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.25);margin-top:7px" onclick="changeSRPass(${s.id})">💾 সেভ</button>
-      </div>`;
-    }).join('') : '<div style="color:var(--t3);font-size:15px">কোনো SR নেই</div>';
+    srList.innerHTML = srs.length ? srs.map(s => `
+      <div style="background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.15);border-radius:8px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div><div style="font-size:14px;font-weight:700;color:var(--green)">👤 ${s.name} <span style="font-size:12px;color:var(--t3);font-weight:400">(${s.code})</span></div>
+        <div style="font-size:13px;color:var(--t3)">📱 ${s.phone||'মোবাইল নেই'} — ${s.authUid?'✅ পোর্টাল অ্যাকাউন্ট সক্রিয়':'⚠️ অ্যাকাউন্ট নেই'}</div></div>
+        <button class="btn btn-sm btn-gh" onclick="navTo('sr');setTimeout(()=>openEditSR(${s.id}),60)">✏️ পরিবর্তন</button>
+      </div>`).join('') : '<div style="color:var(--t3);font-size:15px">কোনো SR নেই</div>';
   }
-  // DM individual passwords
+  // DM অ্যাকাউন্ট স্ট্যাটাস (পাসওয়ার্ড বদলাতে DM লিস্টে Edit করুন)
   const dms = DB.get('dms');
   const dmList = document.getElementById('dm-pass-list');
   if (dmList) {
-    dmList.innerHTML = dms.length ? dms.map(d => {
-      const key = 'dm_dm_pass_' + d.id;
-      const cur = localStorage.getItem(key) || localStorage.getItem('dm_delivery_pass') || 'delivery123';
-      return `<div style="background:rgba(34,211,238,.05);border:1px solid rgba(34,211,238,.15);border-radius:8px;padding:10px 12px">
-        <div style="font-size:14px;font-weight:700;color:var(--cyan);margin-bottom:7px">🚴 ${d.name} <span style="font-size:12px;color:var(--t3);font-weight:400">(${d.code})</span></div>
-        <div class="g2">
-          <div class="fg" style="margin:0"><label style="font-size:13px">বর্তমান পাসওয়ার্ড</label>
-            <input type="text" id="pw-dm-cur-${d.id}" value="${cur}" readonly style="background:rgba(34,211,238,.06);color:var(--cyan);font-size:15px"></div>
-          <div class="fg" style="margin:0"><label style="font-size:13px">নতুন পাসওয়ার্ড</label>
-            <input type="password" id="pw-dm-new-${d.id}" placeholder="নতুন পাসওয়ার্ড" style="font-size:15px"></div>
-        </div>
-        <button class="btn btn-sm" style="background:rgba(34,211,238,.1);color:var(--cyan);border:1px solid rgba(34,211,238,.25);margin-top:7px" onclick="changeDMPass(${d.id})">💾 সেভ</button>
-      </div>`;
-    }).join('') : '<div style="color:var(--t3);font-size:15px">কোনো DM নেই</div>';
+    dmList.innerHTML = dms.length ? dms.map(d => `
+      <div style="background:rgba(34,211,238,.05);border:1px solid rgba(34,211,238,.15);border-radius:8px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div><div style="font-size:14px;font-weight:700;color:var(--cyan)">🚴 ${d.name} <span style="font-size:12px;color:var(--t3);font-weight:400">(${d.code})</span></div>
+        <div style="font-size:13px;color:var(--t3)">📱 ${d.phone||'মোবাইল নেই'} — ${d.authUid?'✅ পোর্টাল অ্যাকাউন্ট সক্রিয়':'⚠️ অ্যাকাউন্ট নেই'}</div></div>
+        <button class="btn btn-sm btn-gh" onclick="navTo('dm');setTimeout(()=>openEditDM(${d.id}),60)">✏️ পরিবর্তন</button>
+      </div>`).join('') : '<div style="color:var(--t3);font-size:15px">কোনো DM নেই</div>';
   }
-}
-
-function changeSRPass(srId) {
-  const newEl = document.getElementById('pw-sr-new-' + srId);
-  const curEl = document.getElementById('pw-sr-cur-' + srId);
-  const newPass = newEl ? newEl.value.trim() : '';
-  if (!newPass || newPass.length < 4) { toast('কমপক্ষে ৪ অক্ষরের পাসওয়ার্ড দিন', false); return; }
-  const key = 'dm_sr_pass_' + srId;
-  localStorage.setItem(key, newPass);
-  if (curEl) curEl.value = newPass;
-  if (newEl) newEl.value = '';
-  if (fbOnline) FDB.ref('config/passes/sr_' + srId).set(newPass).catch(e=>{});
-  toast('✅ SR পাসওয়ার্ড পরিবর্তন হয়েছে!');
-}
-
-function changeDMPass(dmId) {
-  const newEl = document.getElementById('pw-dm-new-' + dmId);
-  const curEl = document.getElementById('pw-dm-cur-' + dmId);
-  const newPass = newEl ? newEl.value.trim() : '';
-  if (!newPass || newPass.length < 4) { toast('কমপক্ষে ৪ অক্ষরের পাসওয়ার্ড দিন', false); return; }
-  const key = 'dm_dm_pass_' + dmId;
-  localStorage.setItem(key, newPass);
-  if (curEl) curEl.value = newPass;
-  if (newEl) newEl.value = '';
-  if (fbOnline) FDB.ref('config/passes/dm_' + dmId).set(newPass).catch(e=>{});
-  toast('✅ DM পাসওয়ার্ড পরিবর্তন হয়েছে!');
 }
 
 function changePass(type) {
@@ -8253,7 +8927,7 @@ function changePass(type) {
   localStorage.setItem(cfg.key, newPass);
   document.getElementById(cfg.currId).value = newPass;
   document.getElementById(cfg.newId).value = '';
-  if (fbOnline) FDB.ref('config/passes/'+cfg.fbKey).set(newPass).catch(e=>{});
+  if (fbOnline) bizRef('config/passes/'+cfg.fbKey).set(newPass).catch(e=>{});
   toast('✅ পাসওয়ার্ড পরিবর্তন হয়েছে!');
 }
 
@@ -8343,22 +9017,73 @@ window.onload = () => {
   }, 2000);
   // Dynamically load Firebase SDK first, then boot
   loadFirebaseSDK(function(fbReady) {
-    if (fbReady) {
-      startWithFirebase();
-    } else {
-      // Firebase না পেলে cache থেকে চলো
+    if (!fbReady) {
       console.warn('Firebase unavailable — using cache only');
       bootApp();
+      return;
     }
+    if (!FAUTH) {
+      // Auth SDK লোড হয়নি — পুরনো single-business mode এ চালাও
+      startWithFirebase();
+      return;
+    }
+
+    // Firebase Auth state resolve হওয়া পর্যন্ত অপেক্ষা করো —
+    // BIZ_ID ঠিকভাবে সেট না হলে কোনো data load করা নিরাপদ নয়।
+    var _authResolved = false;
+    var _authTimeout = setTimeout(function() {
+      if (!_authResolved) {
+        _authResolved = true;
+        console.warn('Auth state timeout');
+        bootApp(); // login screen দেখাবে (sessionStorage না থাকলে)
+      }
+    }, 3000);
+
+    FAUTH.onAuthStateChanged(function(user) {
+      if (_authResolved) {
+        // Boot হয়ে গেছে — শুধু unexpected logout handle করো
+        if (!user && sessionStorage.getItem(ADMIN_SESS)) {
+          sessionStorage.removeItem(ADMIN_SESS);
+          BIZ_ID = null;
+          currentAdminUser = null;
+          location.reload();
+        }
+        return;
+      }
+      clearTimeout(_authTimeout);
+      _authResolved = true;
+
+      if (user) {
+        currentAdminUser = user;
+        BIZ_ID = user.uid;
+        sessionStorage.setItem(ADMIN_SESS, user.uid);
+        document.getElementById('admin-login-screen').style.display = 'none';
+        document.getElementById('sb').style.display = '';
+        document.getElementById('main').style.display = '';
+        const userInfoEl = document.getElementById('admin-user-info');
+        if (userInfoEl) { userInfoEl.textContent = user.email || 'Admin'; userInfoEl.style.display = ''; }
+        startWithFirebase();
+      } else {
+        BIZ_ID = null;
+        currentAdminUser = null;
+        sessionStorage.removeItem(ADMIN_SESS);
+        bootApp(); // login screen দেখাবে
+      }
+    });
   });
 };
 
+let _dataListenerStarted = false;
 function startWithFirebase() {
-  // Load all data from Firebase first
+  // Load all data from Firebase first, then keep listening live
   var _bootDone=false;
   function safeBoot(){if(_bootDone)return;_bootDone=true;bootApp();}
   var _t=setTimeout(function(){console.warn('startWithFirebase timeout');safeBoot();},2000);
-  FDB.ref('data').once('value').then(snap => {
+
+  if (_dataListenerStarted) { safeBoot(); return; } // দ্বিতীয়বার লগইন হলে দ্বিতীয় লিসেনার বসবে না
+  _dataListenerStarted = true;
+
+  bizRef('data').on('value', snap => {
     clearTimeout(_t);
     const data = snap.val() || {};
     ['products','orders','deliveries','shops','srs','expenses','purchases','payments','dms','manual_outstanding'].forEach(t => {
@@ -8366,50 +9091,47 @@ function startWithFirebase() {
       const arr = raw ? (Array.isArray(raw) ? raw : Object.values(raw)) : [];
       C.set(t, arr);
     });
-    // Locked prices — must await before boot so prices are correct on first render
-    FDB.ref('lp').once('value').then(lp => { C.set('lp', lp.val()||{}); safeBoot(); }).catch(()=>{ safeBoot(); });
-    FDB.ref('config/passes').once('value').then(ps => {
-      const pd = ps.val() || {};
-      if (pd.admin)    localStorage.setItem('dm_admin_pass',    pd.admin);
-      if (pd.sr)       localStorage.setItem('dm_sr_pass',       pd.sr);
-      if (pd.delivery) localStorage.setItem('dm_delivery_pass', pd.delivery);
-      // individual SR and DM passwords
-      Object.keys(pd).forEach(k => {
-        if (k.startsWith('sr_')) localStorage.setItem('dm_sr_pass_' + k.slice(3), pd[k]);
-        if (k.startsWith('dm_')) localStorage.setItem('dm_dm_pass_' + k.slice(3), pd[k]);
-      });
-    }).catch(()=>{});
-    // safeBoot is called after lp loads above
-  }).catch(err => {
+    if (!_bootDone) {
+      // প্রথমবার — lp ও পাসওয়ার্ড লোড হওয়ার পর বুট করো
+      bizRef('lp').once('value').then(lp => { C.set('lp', lp.val()||{}); safeBoot(); }).catch(()=>{ safeBoot(); });
+      bizRef('config/passes').once('value').then(ps => {
+        const pd = ps.val() || {};
+        if (pd.admin)    localStorage.setItem('dm_admin_pass',    pd.admin);
+        if (pd.sr)       localStorage.setItem('dm_sr_pass',       pd.sr);
+        if (pd.delivery) localStorage.setItem('dm_delivery_pass', pd.delivery);
+        // individual SR and DM passwords
+        Object.keys(pd).forEach(k => {
+          if (k.startsWith('sr_')) localStorage.setItem('dm_sr_pass_' + k.slice(3), pd[k]);
+          if (k.startsWith('dm_')) localStorage.setItem('dm_dm_pass_' + k.slice(3), pd[k]);
+        });
+      }).catch(()=>{});
+    } else {
+      // ── রিয়েল-টাইম আপডেট (SR/DM পোর্টাল বা অন্য ডিভাইস থেকে ডেটা বদলালে) ──
+      // পুরো পেজ রিলোড/রিসেট নয় — শুধু টেবিল/লিস্ট নিঃশব্দে রিফ্রেশ হবে, ফিল্টার/ফর্ম অক্ষত থাকবে
+      populateSelects();
+      if (liveRefresh[_currentPage]) {
+        try { liveRefresh[_currentPage](); } catch(e) { console.warn('live refresh error:', e); }
+      }
+    }
+  }, err => {
     clearTimeout(_t);
     console.warn('Firebase load failed, using cache:', err);
     safeBoot();
   });
+
+  // Locked prices (lp) ও রিয়েল-টাইম শুনি — SR পোর্টাল থেকে দাম লক করলে সাথে সাথে দেখা যাবে
+  bizRef('lp').on('value', lp => { C.set('lp', lp.val()||{}); });
 
   // Connection monitor
   FDB.ref('.info/connected').on('value', snap => {
     fbOnline = snap.val() === true;
     showConnStatus(fbOnline);
     if (fbOnline) {
-      Object.entries(fbPending).forEach(([k,d]) => FDB.ref('data/'+k).set(d).catch(e=>{}));
+      Object.entries(fbPending).forEach(([k,d]) => bizRef('data/'+k).set(d).catch(e=>{}));
       for (const k in fbPending) delete fbPending[k];
+      // Firebase connect হলেই backup নাও
+      autoFirebaseBackup();
     }
-  });
-
-  // Real-time listeners (admin sees everything live)
-  ['orders','deliveries','products','shops','srs','dms'].forEach(t => {
-    FDB.ref('data/'+t).on('value', snap => {
-      const raw = snap.val();
-      const arr = raw ? (Array.isArray(raw) ? raw : Object.values(raw)) : [];
-      C.set(t, arr);
-      // Re-render current page if relevant (only when logged in)
-      if (!sessionStorage.getItem(ADMIN_SESS)) return;
-      const cur = document.querySelector('.sb-item.on')?.dataset?.p;
-      if (cur === 'dash') renderDash();
-      else if (cur === 'order' && (t==='orders'||t==='products'||t==='shops')) { renderOrders(); renderOrderProductSummary(); }
-      else if (cur === 'delivery' && (t==='orders'||t==='deliveries')) { renderDeliveryCards(); renderDeliveries(); }
-      else if (cur === 'outstanding') renderOutstanding();
-    });
   });
 }
 
@@ -8424,16 +9146,308 @@ function bootApp() {
   if (opsFrom) opsFrom.value = today();
   if (opsTo)   opsTo.value   = today();
 
-  // Check admin login
-  if (!sessionStorage.getItem(ADMIN_SESS)) {
+  // Login স্ক্রিন দেখাও (BIZ_ID না থাকলে মানে login করা নেই)
+  if (!BIZ_ID || !sessionStorage.getItem(ADMIN_SESS)) {
     document.getElementById('admin-login-screen').style.display = 'flex';
     document.getElementById('sb').style.display   = 'none';
     document.getElementById('main').style.display = 'none';
     setTimeout(() => {
-      const p = document.getElementById('admin-pass-input'); if (p) p.focus();
+      const p = document.getElementById('admin-email-input'); if (p) p.focus();
     }, 100);
   } else {
+    checkSubscriptionAndRender();
+  }
+}
+
+// ══════════════════════════════════════════
+//  SUBSCRIPTION / TRIAL CHECK
+//  businesses/{BIZ_ID}/meta এ plan তথ্য রাখা হয় —
+//  multi-business SaaS এ এই একই function ব্যবহার হবে,
+//  শুধু BIZ_ID dynamic হবে login করা admin অনুযায়ী।
+// ══════════════════════════════════════════
+function checkSubscriptionAndRender() {
+  if (!fbOnline) { renderDash(); return; } // অফলাইনে block করবে না
+
+  bizRef('meta').once('value').then(snap => {
+    let meta = snap.val();
+
+    if (!meta) {
+      const trialEnds = new Date(Date.now() + 14*24*60*60*1000).toISOString();
+      meta = {
+        businessName: (currentAdminUser && currentAdminUser.email) || 'নতুন ব্যবসা',
+        plan: 'trial',
+        trialEnds: trialEnds,
+        createdAt: new Date().toISOString()
+      };
+      bizRef('meta').set(meta).catch(()=>{});
+    } else if ((meta.plan === 'trial' || !meta.plan) && !meta.trialEnds) {
+      // পুরনো একাউন্ট যাদের trialEnds কখনো সেট হয়নি — একবারই ব্যাকফিল করো,
+      // যাতে প্রতিবার লোডে দিন গোনা নতুন করে শুরু না হয় (এটাই ব্যানার এলোমেলো দেখানোর কারণ ছিল)
+      const trialEnds = new Date(Date.now() + 14*24*60*60*1000).toISOString();
+      meta.trialEnds = trialEnds;
+      bizRef('meta').update({ trialEnds }).catch(()=>{});
+    }
+
+    const status = evalSubscription(meta);
+    if (meta.businessName) GEMINI_CONFIG.businessName = meta.businessName;
+    if (status.active) {
+      setupSubscriptionMeta(meta);
+      renderDash();
+    } else {
+      CURRENT_META = meta || {};
+      showSubscriptionLockScreen(meta);
+    }
+    // লাইভ লিসেনার সবসময় চালু রাখো — active/locked উভয় অবস্থাতেই, যাতে
+    // Super Admin অনুমোদন দিলে সাথে সাথে (রিফ্রেশ ছাড়াই) UI আপডেট হয়
+    startMetaListener();
+  }).catch(() => {
+    // Firebase error হলে block করবে না, app চলতে দাও
     renderDash();
+  });
+}
+
+function evalSubscription(meta) {
+  const now = Date.now();
+  // নতুন duration-based plans — planExpiry চেক করো
+  if (meta.plan === 'monthly' || meta.plan === 'quarterly' || meta.plan === 'biannual') {
+    if (meta.planExpiry) {
+      const expiry = new Date(meta.planExpiry).getTime();
+      if (now < expiry) {
+        const daysLeft = Math.ceil((expiry - now) / 86400000);
+        return { active: true, plan: meta.plan, daysLeft, expiryTs: expiry };
+      }
+      return { active: false, plan: 'expired' };
+    }
+    return { active: true, plan: meta.plan }; // expiry নেই মানে সীমাহীন (Super Admin set করেনি)
+  }
+  // Legacy plans
+  if (meta.plan === 'paid' || meta.plan === 'basic' || meta.plan === 'pro' || meta.plan === 'enterprise') {
+    return { active: true, plan: meta.plan };
+  }
+  // Trial
+  if (meta.plan === 'trial' || !meta.plan) {
+    if (!meta.trialEnds) return { active: true, plan: 'trial', daysLeft: 14, expiryTs: now + 14*86400000 };
+    const trialEnd = new Date(meta.trialEnds).getTime();
+    if (now < trialEnd) {
+      const daysLeft = Math.ceil((trialEnd - now) / 86400000);
+      return { active: true, plan: 'trial', daysLeft, expiryTs: trialEnd };
+    }
+    return { active: false, plan: 'expired' };
+  }
+  return { active: true, plan: meta.plan || 'trial' };
+}
+
+let _trialCountdownTimer = null;
+function _fmt2(n) { return String(n).padStart(2, '0'); }
+function _bnDigits(s) {
+  const map = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
+  return String(s).replace(/[0-9]/g, d => map[d]);
+}
+function showTrialBanner(expiryTs, planName) {
+  let banner = document.getElementById('trial-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'trial-banner';
+    banner.style.cssText = 'flex-shrink:0;width:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24);color:#1a1a2e;text-align:center;padding:8px 12px;font-family:"Hind Siliguri",sans-serif;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;box-sizing:border-box';
+    document.body.prepend(banner); // app-row এর আগে বসে, normal flow-এ — কোনো কিছু ঢাকে না
+  }
+  const label = planName === 'ট্রায়াল' ? 'ট্রায়াল মেয়াদ' : `${planName} প্ল্যান`;
+
+  clearInterval(_trialCountdownTimer);
+  function render() {
+    const remain = expiryTs - Date.now();
+    if (remain <= 0) {
+      clearInterval(_trialCountdownTimer);
+      location.reload(); // মেয়াদ শেষ — লক স্ক্রিন দেখানোর জন্য রিলোড
+      return;
+    }
+    const d = Math.floor(remain / 86400000);
+    const h = Math.floor((remain % 86400000) / 3600000);
+    const m = Math.floor((remain % 3600000) / 60000);
+    const s = Math.floor((remain % 60000) / 1000);
+    const timeStr = d > 0
+      ? `${_bnDigits(d)} দিন ${_bnDigits(h)} ঘন্টা ${_bnDigits(m)} মিনিট ${_bnDigits(s)} সেকেন্ড`
+      : `${_bnDigits(h)} ঘন্টা ${_bnDigits(m)} মিনিট ${_bnDigits(s)} সেকেন্ড`;
+    banner.innerHTML = `<span>⏳ ${label} শেষ হতে বাকি: <b style="font-variant-numeric:tabular-nums">${timeStr}</b></span>
+      <button onclick="openSubscriptionModal()"
+        style="background:#1a1a2e;color:#fbbf24;border:none;border-radius:6px;padding:3px 10px;font-family:'Hind Siliguri',sans-serif;font-size:13px;font-weight:700;cursor:pointer">
+        রিনিউ করুন →
+      </button>`;
+  }
+  render();
+  _trialCountdownTimer = setInterval(render, 1000);
+  banner.style.display = 'flex';
+}
+
+function showSubscriptionLockScreen(meta) {
+  document.getElementById('sb').style.display = 'none';
+  document.getElementById('main').style.display = 'none';
+  const planLabels = { monthly:'মাসিক', quarterly:'৩ মাসের', biannual:'৬ মাসের', trial:'১৪ দিনের ফ্রি ট্রায়াল' };
+  const planLabel = planLabels[meta.plan] || 'আপনার';
+  let lock = document.getElementById('sub-lock-screen');
+  if (!lock) {
+    lock = document.createElement('div');
+    lock.id = 'sub-lock-screen';
+    lock.style.cssText = 'position:fixed;inset:0;background:#0f1923;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px;text-align:center;font-family:"Hind Siliguri",sans-serif';
+    document.body.appendChild(lock);
+  }
+  lock.innerHTML = `
+    <div style="font-size:50px;margin-bottom:14px">🔒</div>
+    <div style="font-size:22px;font-weight:800;color:#f1f5f9;margin-bottom:10px">মেয়াদ শেষ হয়ে গেছে</div>
+    <div style="font-size:15px;color:#94a3b8;max-width:380px;margin-bottom:24px;line-height:1.7">
+      আপনার ${planLabel} মেয়াদ শেষ হয়ে গেছে। সিস্টেম ব্যবহার চালিয়ে যেতে সাবস্ক্রিপশন রিনিউ করুন।
+    </div>
+    <button onclick="openSubscriptionModal()" style="background:linear-gradient(135deg,#60a5fa,#1d4ed8);color:#fff;border:none;border-radius:8px;padding:12px 28px;font-family:'Hind Siliguri',sans-serif;font-size:16px;font-weight:700;cursor:pointer">
+      💳 সাবস্ক্রিপশন রিনিউ করুন
+    </button>
+    <button onclick="adminLogout()" style="margin-top:14px;background:none;border:none;color:#7a9ab8;font-family:'Hind Siliguri',sans-serif;font-size:14px;cursor:pointer;text-decoration:underline">
+      লগআউট করুন
+    </button>
+  `;
+  lock.style.display = 'flex';
+}
+// ══════════════════════════════════════════
+
+// ══════════════════════════════════════════
+//  SUBSCRIPTION META — সরলীকৃত
+//  সব ফিচার সবার জন্য উন্মুক্ত
+//  শুধু subscription active/expired চেক হয়
+// ══════════════════════════════════════════
+
+let CURRENT_META = {};
+
+function setupSubscriptionMeta(meta) {
+  CURRENT_META = meta || {};
+  showPlanBadgeInTopbar();
+  if (typeof pdRenderHeader === 'function') pdRenderHeader();
+}
+
+function showPlanBadgeInTopbar() {
+  let badge = document.getElementById('plan-topbar-badge');
+  if (!badge) {
+    badge = document.createElement('div');
+    badge.id = 'plan-topbar-badge';
+    const tbRight = document.querySelector('.tb-right');
+    if (tbRight) tbRight.insertBefore(badge, tbRight.firstChild);
+  }
+  const planLabels = { monthly:'মাসিক', quarterly:'৩ মাস', biannual:'৬ মাস', trial:'ট্রায়াল' };
+  const planColors = { monthly:'#60a5fa', quarterly:'#a855f7', biannual:'#22d3ee', trial:'#fbbf24' };
+  const plan = CURRENT_META.plan || 'trial';
+  const color = planColors[plan] || '#94a3b8';
+  badge.style.cssText = `font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,.08);border:1px solid ${color}55;color:${color};white-space:nowrap;cursor:default`;
+  badge.textContent = '⭐ ' + (planLabels[plan] || plan);
+  badge.title = 'আপনার বর্তমান প্ল্যান';
+}
+// ══════════════════════════════════════════ (end subscription meta)
+
+// ── Restore Menu ──
+function toggleRestoreMenu() {
+  const m = document.getElementById('restore-menu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+  document.addEventListener('click', function hideMenu(e) {
+    if (!document.getElementById('restore-btn').contains(e.target) &&
+        !document.getElementById('restore-menu').contains(e.target)) {
+      document.getElementById('restore-menu').style.display = 'none';
+      document.removeEventListener('click', hideMenu);
+    }
+  });
+}
+
+// ── Firebase Restore Modal ──
+function showFirebaseRestoreModal() {
+  document.getElementById('restore-menu').style.display = 'none';
+  if (!fbOnline || !FDB) { toast('Firebase connected নেই!', false); return; }
+  bizRef('backups').once('value').then(snap => {
+    const data = snap.val();
+    if (!data) { toast('Firebase এ কোনো backup নেই!', false); return; }
+    const dates = Object.keys(data).sort().reverse();
+    const opts = dates.map(d => `<option value="${d}">${d} (${data[d]._backupTime ? new Date(data[d]._backupTime).toLocaleString('bn-BD') : ''})</option>`).join('');
+    const modal = document.createElement('div');
+    modal.id = 'fb-restore-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
+    modal.innerHTML = `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:420px;width:100%">
+        <h3 style="margin-bottom:16px;color:var(--text)">🔥 Firebase থেকে রিস্টোর</h3>
+        <p style="color:var(--t2);font-size:14px;margin-bottom:16px">তারিখ সিলেক্ট করুন:</p>
+        <select id="fb-restore-date" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;font-family:inherit;font-size:14px;margin-bottom:16px">
+          ${opts}
+        </select>
+        <p style="color:var(--gold);font-size:13px;margin-bottom:16px">⚠️ বর্তমান সব data মুছে যাবে এবং selected date এর data আসবে।</p>
+        <div style="display:flex;gap:10px">
+          <button onclick="doFirebaseRestore()" style="flex:1;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;cursor:pointer;font-family:inherit">✅ রিস্টোর করুন</button>
+          <button onclick="document.getElementById('fb-restore-modal').remove()" style="flex:1;background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:15px;cursor:pointer;font-family:inherit">বাতিল</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+  }).catch(e => toast('Error: ' + e.message, false));
+}
+
+async function doFirebaseRestore() {
+  const date = document.getElementById('fb-restore-date').value;
+  if (!date) return;
+  // Loading বার্তা দেখাও
+  const restoreBtn = document.querySelector('#fb-restore-modal button');
+  if (restoreBtn) { restoreBtn.disabled = true; restoreBtn.innerHTML = '⏳ লোড হচ্ছে...'; }
+  const loadMsg = document.createElement('div');
+  loadMsg.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.85);color:#fff;padding:20px 32px;border-radius:12px;font-size:16px;z-index:999999;text-align:center';
+  loadMsg.innerHTML = '🔥 Firebase থেকে ডাটা লোড হচ্ছে...<br><small style="color:#94a3b8;font-size:13px">অপেক্ষা করুন</small>';
+  document.body.appendChild(loadMsg);
+  try {
+    const snap = await bizRef('backups/' + date).once('value');
+    const data = snap.val();
+    if (!data) {
+      loadMsg.remove();
+      toast('এই তারিখের backup নেই!', false);
+      return;
+    }
+    const tables = ['products','orders','deliveries','shops','srs','expenses','purchases','payments','dms','manual_outstanding'];
+    // সব table একসাথে set করো
+    tables.forEach(t => {
+      if (data[t]) DB.set(t, Array.isArray(data[t]) ? data[t] : Object.values(data[t]));
+    });
+    loadMsg.innerHTML = '✅ রিস্টোর সম্পন্ন!<br><small style="color:#6ee7b7;font-size:13px">ড্যাশবোর্ড লোড হচ্ছে...</small>';
+    document.getElementById('fb-restore-modal').remove();
+    setTimeout(() => {
+      loadMsg.remove();
+      populateSelects();
+      renderDash();
+      navigateTo('dash');
+      toast('✅ Firebase থেকে রিস্টোর সফল! (' + date + ')');
+    }, 800);
+  } catch(e) {
+    loadMsg.remove();
+    toast('Error: ' + e.message, false);
+  }
+}
+
+// ── Auto Firebase Backup ──
+// প্রতিদিন একবার সব data Firebase backups/ node এ সেভ করে
+function autoFirebaseBackup() {
+  if (!fbOnline || !FDB) return;
+  const now = new Date();
+  // Bangladesh time (UTC+6)
+  const bdTime = new Date(now.getTime() + 6*60*60*1000);
+  const todayKey = bdTime.toISOString().split('T')[0]; // 2026-06-09
+  const timeStr  = bdTime.toISOString().replace('T',' ').substring(0,19); // 2026-06-09 06:23:10
+  const lastKey  = localStorage.getItem('dm_last_backup_date');
+  if (lastKey === todayKey && location.protocol !== 'file:') return;
+  try {
+    const tables = ['products','orders','deliveries','shops','srs','expenses','purchases','payments','dms','manual_outstanding'];
+    const snap = {};
+    tables.forEach(t => { snap[t] = DB.get(t); });
+    snap._backupTime = timeStr + ' (BD)';
+    bizRef('backups/' + todayKey).set(snap)
+      .then(() => {
+        localStorage.setItem('dm_last_backup_date', todayKey);
+        console.log('✅ Auto backup done:', todayKey, timeStr);
+        const old = new Date(bdTime);
+        old.setDate(old.getDate() - 30);
+        const oldKey = old.toISOString().split('T')[0];
+        bizRef('backups/' + oldKey).remove().catch(()=>{});
+      })
+      .catch(e => console.warn('Auto backup failed:', e));
+  } catch(e) {
+    console.warn('Auto backup error:', e);
   }
 }
 // ══════════════════════════════════════════
@@ -10901,17 +11915,21 @@ function drillShopDetailFromArea(shopId) {
     ${shop.area?`<span style="font-size:13px;color:var(--t3)">📍 ${shop.area}</span>`:''}
     ${sr.name?`<span style="font-size:13px;color:var(--t3)">👨‍💼 ${sr.name}</span>`:''}
   </div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px">
     <div style="background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.2);border-radius:9px;padding:10px;text-align:center">
       <div style="font-size:11px;color:var(--t3);margin-bottom:3px">মোট বিক্রয়</div>
       <div style="font-size:16px;font-weight:800;color:var(--cyan)">${fmt(totalSales)}</div>
     </div>
     <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:9px;padding:10px;text-align:center">
-      <div style="font-size:11px;color:var(--t3);margin-bottom:3px">মোট সংগ্রহ</div>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:3px">মোট সংগ্রহ (আদায়+ছাড়)</div>
       <div style="font-size:16px;font-weight:800;color:var(--green)">${fmt(totalCash + totalDiscount)}</div>
     </div>
+    <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:9px;padding:10px;text-align:center">
+      <div style="font-size:11px;color:var(--t3);margin-bottom:3px">মোট ছাড়</div>
+      <div style="font-size:16px;font-weight:800;color:var(--gold)">${fmt(totalDiscount)}</div>
+    </div>
     <div style="background:${totalDue>0?'rgba(239,68,68,.08)':'rgba(16,185,129,.08)'};border:1px solid ${totalDue>0?'rgba(239,68,68,.2)':'rgba(16,185,129,.2)'};border-radius:9px;padding:10px;text-align:center">
-      <div style="font-size:11px;color:var(--t3);margin-bottom:3px">বকেয়া</div>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:3px">অবশিষ্ট বকেয়া</div>
       <div style="font-size:16px;font-weight:800;color:${totalDue>0?'var(--red)':'var(--green)'}">
         ${totalDue>0?fmt(totalDue):'✅ ০'}
       </div>
@@ -11387,8 +12405,8 @@ function initTracking() {
   }
   // Firebase listener
   if (!FDB) { document.getElementById('track-sr-cards').innerHTML='<div style="color:var(--t3);padding:12px">Firebase সংযোগ নেই</div>'; return; }
-  if (_trackListener) FDB.ref('tracking').off('value', _trackListener);
-  _trackListener = FDB.ref('tracking').on('value', function(snap) {
+  if (_trackListener) bizRef('tracking').off('value', _trackListener);
+  _trackListener = bizRef('tracking').on('value', function(snap) {
     const data = snap.val() || {};
     _renderTrackingData(data);
   });
@@ -12034,7 +13052,7 @@ async function aiLoadAllData() {
   // Firebase থেকে fresh data নেওয়ার চেষ্টা
   if (fbOnline && FDB) {
     try {
-      const snap = await FDB.ref('data').once('value');
+      const snap = await bizRef('data').once('value');
       const fbData = snap.val() || {};
       // Firebase-এর data LocalStorage থেকে বেশি fresh হলে নাও
       const keys = ['orders','deliveries','payments','products','srs','shops','expenses'];
@@ -13502,6 +14520,474 @@ ${monthTrend.join(' | ')}
     return 'ডেটা লোড করতে সমস্যা হয়েছে: ' + e.message;
   }
 }
+</script>
+
+<!-- ═══════════ প্রোফাইল এডিট মোডাল ═══════════ -->
+<div id="pd-profile-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9100;align-items:center;justify-content:center;backdrop-filter:blur(6px)" onclick="if(event.target===this)closeProfileEditModal()">
+  <div class="modal" style="width:420px">
+    <button class="m-close" onclick="closeProfileEditModal()">✕</button>
+    <div class="m-title">👤 প্রোফাইল</div>
+    <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:18px">
+      <div style="width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;color:#fff;overflow:hidden;margin-bottom:10px">
+        <img id="pd-modal-avatar-img" src="" style="display:none;width:100%;height:100%;object-fit:cover">
+        <span id="pd-modal-avatar-letter">A</span>
+      </div>
+      <label for="pd-photo-input" style="font-size:14px;color:var(--blue);cursor:pointer">📷 ছবি পরিবর্তন করুন</label>
+      <input type="file" id="pd-photo-input" accept="image/*" style="display:none" onchange="pdHandlePhotoUpload(this)">
+    </div>
+    <div class="fg"><label>নাম</label><input id="pd-f-name" placeholder="আপনার নাম"></div>
+    <div class="fg"><label>ইমেইল</label><input id="pd-f-email" type="email" placeholder="email@example.com"></div>
+    <div class="fg"><label>মোবাইল নম্বর</label><input id="pd-f-phone" type="tel" placeholder="01XXXXXXXXX"></div>
+    <div class="m-foot">
+      <button class="btn btn-gh" onclick="closeProfileEditModal()">বাতিল</button>
+      <button class="btn btn-p" onclick="savePdProfile()">✅ সেভ করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ রিচার্জ মোডাল ═══════════ -->
+<div id="pd-recharge-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9100;align-items:center;justify-content:center;backdrop-filter:blur(6px)" onclick="if(event.target===this)closeRechargeModal()">
+  <div class="modal" style="width:420px">
+    <button class="m-close" onclick="closeRechargeModal()">✕</button>
+    <div class="m-title">💳 রিচার্জ করুন</div>
+    <div style="text-align:center">
+      <div style="font-size:14px;color:var(--t3)">বর্তমান ব্যালেন্স</div>
+      <div class="pd-big-balance" id="pd-rc-balance">৳০</div>
+    </div>
+    <div class="fg"><label>পরিমাণ (৳)</label><input id="pd-rc-amount" type="number" min="1" placeholder="পরিমাণ লিখুন"></div>
+    <div class="pd-quick-amt">
+      <button type="button" onclick="pdSetQuickAmt(100)">৳১০০</button>
+      <button type="button" onclick="pdSetQuickAmt(500)">৳৫০০</button>
+      <button type="button" onclick="pdSetQuickAmt(1000)">৳১,০০০</button>
+      <button type="button" onclick="pdSetQuickAmt(5000)">৳৫,০০০</button>
+    </div>
+    <div class="fg"><label>মাধ্যম</label>
+      <select id="pd-rc-method"><option>বিকাশ</option><option>নগদ</option><option>রকেট</option><option>ব্যাংক ট্রান্সফার</option></select>
+    </div>
+    <div class="m-foot">
+      <button class="btn btn-gh" onclick="closeRechargeModal()">বাতিল</button>
+      <button class="btn btn-p" onclick="doRecharge()">💰 রিচার্জ করুন</button>
+    </div>
+    <div class="pd-demo-note">⚠️ এটি একটি ডেমো ফিচার — কোনো প্রকৃত পেমেন্ট গেটওয়ে যুক্ত নেই, ব্যালেন্স শুধু এই ডিভাইসে লোকালি সংরক্ষিত হয়</div>
+    <div style="margin-top:14px">
+      <div style="font-size:14px;font-weight:700;color:var(--t2);margin-bottom:6px">সাম্প্রতিক রিচার্জ</div>
+      <div id="pd-rc-history" style="max-height:160px;overflow-y:auto"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ এসএমএস হিস্টোরি মোডাল ═══════════ -->
+<div id="pd-sms-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9100;align-items:center;justify-content:center;backdrop-filter:blur(6px)" onclick="if(event.target===this)closeSmsHistoryModal()">
+  <div class="modal" style="width:540px">
+    <button class="m-close" onclick="closeSmsHistoryModal()">✕</button>
+    <div class="m-title">💬 এসএমএস হিস্টোরি</div>
+    <div class="pd-demo-note" style="margin-top:0;margin-bottom:14px">⚠️ ডেমো ডেটা — এই অ্যাপে এখনো প্রকৃত SMS গেটওয়ে যুক্ত নেই</div>
+    <div class="tw" style="max-height:360px;overflow-y:auto">
+      <table>
+        <thead><tr><th>তারিখ</th><th>প্রাপক</th><th>বার্তা</th><th>স্ট্যাটাস</th></tr></thead>
+        <tbody id="pd-sms-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ সাবস্ক্রিপশন মোডাল ═══════════ -->
+<div id="pd-sub-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:10000;align-items:center;justify-content:center;backdrop-filter:blur(6px);overflow-y:auto;padding:20px 12px" onclick="if(event.target===this)closeSubscriptionModal()">
+  <div class="modal" style="width:880px;max-width:96vw">
+    <button class="m-close" onclick="closeSubscriptionModal()">✕</button>
+    <div class="m-title">⭐ সাবস্ক্রিপশন রিনিউ করুন</div>
+    <div id="pd-sub-current" class="pd-sub-current-bar"></div>
+    <div id="pd-sub-plans" class="pd-sub-grid"></div>
+    <div class="pd-demo-note">📨 আপগ্রেড রিকোয়েস্ট পাঠালে Super Admin অনুমোদন করবেন। অনুমোদনের পর প্ল্যান স্বয়ংক্রিয়ভাবে activate হবে।</div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  প্রোফাইল ড্রপডাউন সিস্টেম (প্রোফাইল / রিচার্জ / SMS হিস্টোরি / সাবস্ক্রিপশন)
+//  — রিচার্জ, SMS হিস্টোরি ও সাবস্ক্রিপশন আপাতত ডেমো ডেটাভিত্তিক, লোকাল স্টোরেজে সংরক্ষিত
+// ══════════════════════════════════════════
+const PD_K = {
+  name:'dm_admin_name', email:'dm_admin_email', phone:'dm_admin_phone', photo:'dm_admin_photo',
+  balance:'dm_wallet_balance', hist:'dm_wallet_history', sub:'dm_subscription', sms:'dm_sms_history'
+};
+
+function pdInit() {
+  if (localStorage.getItem(PD_K.name) === null) localStorage.setItem(PD_K.name, 'এডমিন ইউজার');
+  if (localStorage.getItem(PD_K.email) === null) localStorage.setItem(PD_K.email, 'admin@dealership.com');
+  if (localStorage.getItem(PD_K.phone) === null) localStorage.setItem(PD_K.phone, '01700000000');
+  if (localStorage.getItem(PD_K.balance) === null) localStorage.setItem(PD_K.balance, '1250');
+  if (!localStorage.getItem(PD_K.hist)) {
+    const today = new Date();
+    const d1 = new Date(today); d1.setDate(d1.getDate()-3);
+    const d2 = new Date(today); d2.setDate(d2.getDate()-12);
+    localStorage.setItem(PD_K.hist, JSON.stringify([
+      {date:d1.toISOString().slice(0,10), amount:1000, method:'বিকাশ'},
+      {date:d2.toISOString().slice(0,10), amount:500, method:'নগদ'}
+    ]));
+  }
+  if (!localStorage.getItem(PD_K.sub)) {
+    const exp = new Date(); exp.setDate(exp.getDate()+47);
+    localStorage.setItem(PD_K.sub, JSON.stringify({planId:'m3', plan:'৩ মাসের প্ল্যান', price:2550, expiry:exp.toISOString().slice(0,10)}));
+  }
+  if (!localStorage.getItem(PD_K.sms)) {
+    let shops = [];
+    try { shops = (typeof DB !== 'undefined') ? (DB.get('shops')||[]) : []; } catch(e) {}
+    const names = shops.length ? shops.slice(0,5).map(s=>s.name) : ['করিম স্টোর','রহিম ভ্যারাইটি','নিউ মার্কেট শপ','সততা স্টোর','আলিফ ট্রেডার্স'];
+    const msgs = [
+      {body:'আপনার বকেয়া পরিশোধের জন্য অনুরোধ রইলো।', status:'ডেলিভারড'},
+      {body:'আপনার অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে।', status:'ডেলিভারড'},
+      {body:'আজকের ডেলিভারি পথে আছে।', status:'ডেলিভারড'},
+      {body:'এই মাসে নতুন প্রোডাক্টে বিশেষ ছাড় চলছে।', status:'ব্যর্থ'},
+      {body:'আপনার পেমেন্ট সফলভাবে গৃহীত হয়েছে, ধন্যবাদ।', status:'ডেলিভারড'}
+    ];
+    const today = new Date();
+    const arr = names.map((nm,i)=>{
+      const d = new Date(today); d.setDate(d.getDate()-i*2);
+      const m = msgs[i % msgs.length];
+      return {date:d.toISOString().slice(0,10), to:nm, msg:m.body, status:m.status};
+    });
+    localStorage.setItem(PD_K.sms, JSON.stringify(arr));
+  }
+}
+
+function pdGetName(){
+  // Firebase meta তে আসল মালিকের নাম থাকলে সেটাই ব্যবহার করো (localStorage-এ কাস্টম নাম সেভ করা থাকলে সেটা প্রাধান্য পাবে)
+  const saved = localStorage.getItem(PD_K.name);
+  if (saved && saved !== 'এডমিন ইউজার') return saved;
+  if (CURRENT_META && CURRENT_META.ownerName) return CURRENT_META.ownerName;
+  return saved || 'এডমিন ইউজার';
+}
+function pdGetBalance(){ return parseFloat(localStorage.getItem(PD_K.balance)||'0'); }
+
+function pdRenderHeader() {
+  const name = pdGetName();
+  const savedEmail = localStorage.getItem(PD_K.email);
+  const email = (savedEmail && savedEmail !== 'admin@dealership.com')
+    ? savedEmail
+    : ((currentAdminUser && currentAdminUser.email) || (CURRENT_META && CURRENT_META.email) || savedEmail || '');
+  const photo = localStorage.getItem(PD_K.photo) || '';
+  const letter = (name.trim().charAt(0) || 'A').toUpperCase();
+
+  const hn = document.getElementById('pd-header-name'); if (hn) hn.textContent = name;
+  const he = document.getElementById('pd-header-email'); if (he) he.textContent = email;
+
+  ['pd-header-letter','pd-avatar-letter'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) { el.textContent = letter; el.style.display = photo ? 'none' : 'flex'; }
+  });
+  ['pd-header-avatar-img','pd-avatar-img'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) { if (photo) { el.src = photo; el.style.display = 'block'; } else { el.style.display = 'none'; } }
+  });
+
+  const balEl = document.getElementById('pd-balance-badge');
+  if (balEl) balEl.textContent = '৳' + pdGetBalance().toLocaleString('en-IN');
+
+  const planLabels = { monthly:'মাসিক', quarterly:'৩ মাস', biannual:'৬ মাস', trial:'ট্রায়াল' };
+  const sub = CURRENT_META || {};
+  const planEl = document.getElementById('pd-plan-badge');
+  if (planEl) planEl.textContent = planLabels[sub.plan] || sub.plan || '—';
+}
+
+function toggleProfileDropdown() {
+  const dd = document.getElementById('profile-dropdown');
+  const willOpen = dd.style.display !== 'block';
+  if (willOpen) pdRenderHeader();
+  dd.style.display = willOpen ? 'block' : 'none';
+}
+function closeProfileDropdown(){ const dd = document.getElementById('profile-dropdown'); if (dd) dd.style.display = 'none'; }
+
+document.addEventListener('click', function(e){
+  const wrap = document.getElementById('profile-wrap');
+  if (wrap && !wrap.contains(e.target)) closeProfileDropdown();
+});
+
+function goToSettingsFromProfile() {
+  closeProfileDropdown();
+  const item = document.querySelector('[data-p="pwmgr"]');
+  if (item) item.click();
+}
+
+// ── প্রোফাইল এডিট ──
+function openProfileEditModal() {
+  closeProfileDropdown();
+  document.getElementById('pd-f-name').value = localStorage.getItem(PD_K.name) || '';
+  document.getElementById('pd-f-email').value = localStorage.getItem(PD_K.email) || '';
+  document.getElementById('pd-f-phone').value = localStorage.getItem(PD_K.phone) || '';
+  const photo = localStorage.getItem(PD_K.photo) || '';
+  const letter = (pdGetName().trim().charAt(0) || 'A').toUpperCase();
+  document.getElementById('pd-modal-avatar-letter').textContent = letter;
+  const img = document.getElementById('pd-modal-avatar-img');
+  if (photo) { img.src = photo; img.style.display = 'block'; document.getElementById('pd-modal-avatar-letter').style.display = 'none'; }
+  else { img.style.display = 'none'; document.getElementById('pd-modal-avatar-letter').style.display = 'flex'; }
+  document.getElementById('pd-profile-modal').style.display = 'flex';
+}
+function closeProfileEditModal(){ document.getElementById('pd-profile-modal').style.display = 'none'; }
+
+function pdHandlePhotoUpload(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    localStorage.setItem(PD_K.photo, e.target.result);
+    document.getElementById('pd-modal-avatar-img').src = e.target.result;
+    document.getElementById('pd-modal-avatar-img').style.display = 'block';
+    document.getElementById('pd-modal-avatar-letter').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function savePdProfile() {
+  const name = document.getElementById('pd-f-name').value.trim() || 'এডমিন ইউজার';
+  const email = document.getElementById('pd-f-email').value.trim();
+  const phone = document.getElementById('pd-f-phone').value.trim();
+  localStorage.setItem(PD_K.name, name);
+  localStorage.setItem(PD_K.email, email);
+  localStorage.setItem(PD_K.phone, phone);
+  pdRenderHeader();
+  closeProfileEditModal();
+}
+
+// ── রিচার্জ ──
+function openRechargeModal() {
+  closeProfileDropdown();
+  document.getElementById('pd-rc-balance').textContent = '৳' + pdGetBalance().toLocaleString('en-IN');
+  document.getElementById('pd-rc-amount').value = '';
+  pdRenderRechargeHistory();
+  document.getElementById('pd-recharge-modal').style.display = 'flex';
+}
+function closeRechargeModal(){ document.getElementById('pd-recharge-modal').style.display = 'none'; }
+function pdSetQuickAmt(v){ document.getElementById('pd-rc-amount').value = v; }
+
+function pdRenderRechargeHistory() {
+  const hist = JSON.parse(localStorage.getItem(PD_K.hist) || '[]').slice().reverse();
+  const box = document.getElementById('pd-rc-history');
+  if (!hist.length) { box.innerHTML = '<div style="font-size:14px;color:var(--t3);text-align:center;padding:10px">কোনো রিচার্জ হিস্টোরি নেই</div>'; return; }
+  box.innerHTML = hist.map(h=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid var(--border);font-size:14px">
+      <span style="color:var(--t2)">${h.date} · ${h.method}</span>
+      <span style="font-weight:700;color:var(--green)">+৳${(h.amount||0).toLocaleString('en-IN')}</span>
+    </div>`).join('');
+}
+
+function doRecharge() {
+  const amt = parseFloat(document.getElementById('pd-rc-amount').value);
+  if (!amt || amt <= 0) { alert('সঠিক পরিমাণ লিখুন'); return; }
+  const method = document.getElementById('pd-rc-method').value;
+  const newBal = pdGetBalance() + amt;
+  localStorage.setItem(PD_K.balance, String(newBal));
+  const hist = JSON.parse(localStorage.getItem(PD_K.hist) || '[]');
+  hist.push({date: new Date().toISOString().slice(0,10), amount: amt, method});
+  localStorage.setItem(PD_K.hist, JSON.stringify(hist));
+  document.getElementById('pd-rc-balance').textContent = '৳' + newBal.toLocaleString('en-IN');
+  document.getElementById('pd-rc-amount').value = '';
+  pdRenderRechargeHistory();
+  pdRenderHeader();
+}
+
+// ── এসএমএস হিস্টোরি ──
+function openSmsHistoryModal() {
+  closeProfileDropdown();
+  const list = JSON.parse(localStorage.getItem(PD_K.sms) || '[]');
+  const tbody = document.getElementById('pd-sms-tbody');
+  tbody.innerHTML = list.length ? list.map(s=>`
+    <tr>
+      <td>${s.date}</td>
+      <td>${s.to}</td>
+      <td>${s.msg}</td>
+      <td><span class="pd-sms-status ${s.status==='ডেলিভারড'?'ok':'fail'}">${s.status}</span></td>
+    </tr>`).join('')
+    : '<tr><td colspan="4" style="text-align:center;color:var(--t3)">কোনো এসএমএস হিস্টোরি নেই</td></tr>';
+  document.getElementById('pd-sms-modal').style.display = 'flex';
+}
+function closeSmsHistoryModal(){ document.getElementById('pd-sms-modal').style.display = 'none'; }
+
+// ── সাবস্ক্রিপশন — Firebase Realtime, Duration-based ──
+function openSubscriptionModal() {
+  closeProfileDropdown();
+  document.getElementById('pd-sub-modal').style.display = 'flex';
+  pdRenderSubscription();
+}
+function closeSubscriptionModal(){ document.getElementById('pd-sub-modal').style.display = 'none'; }
+
+function pdRenderSubscription() {
+  const container = document.getElementById('pd-sub-plans');
+  const curBar = document.getElementById('pd-sub-current');
+  container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--t2)"><div style="width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px"></div>লোড হচ্ছে...</div>';
+
+  // সবসময় Firebase থেকে fresh meta নাও — CURRENT_META stale হতে পারে
+  function _render(meta) {
+    if (meta) { CURRENT_META = meta; setupSubscriptionMeta(meta); }
+    const planLabels = { monthly:'মাসিক প্ল্যান', quarterly:'৩ মাসের প্ল্যান', biannual:'৬ মাসের প্ল্যান', trial:'ট্রায়াল' };
+    const curPlan = (CURRENT_META && CURRENT_META.plan) || 'trial';
+    const _expiry = CURRENT_META && (CURRENT_META.planExpiry || CURRENT_META.trialEnds);
+    const planExpiry = _expiry ? new Date(_expiry).toLocaleDateString('bn-BD', {day:'2-digit',month:'long',year:'numeric'}) : '—';
+    const discount = (CURRENT_META && CURRENT_META.discount) || 0;
+    const discountNote = (CURRENT_META && CURRENT_META.discountNote) || '';
+    curBar.innerHTML = `
+      <span>বর্তমান প্ল্যান: <strong style="color:var(--blue)">${planLabels[curPlan] || curPlan}</strong></span>
+      <span>মেয়াদ শেষ: <strong>${planExpiry}</strong></span>
+      ${discount ? `<span style="color:var(--green)">🏷️ আপনার ছাড়: ${discount}% ${discountNote ? '(' + discountNote + ')' : ''}</span>` : ''}`;
+    _loadPlans(discount, discountNote, curPlan);
+  }
+
+  if (FDB && BIZ_ID) {
+    bizRef('meta').once('value').then(snap => {
+      _render(snap.val());
+    }).catch(() => { _render(null); });
+  } else {
+    _render(null);
+  }
+}
+
+function _loadPlans(discount, discountNote, curPlan) {
+  const container = document.getElementById('pd-sub-plans');
+  const planLabels = { monthly:'মাসিক প্ল্যান', quarterly:'৩ মাসের প্ল্যান', biannual:'৬ মাসের প্ল্যান', trial:'ট্রায়াল' };
+  const defaults = {
+    monthly:  { label:'মাসিক প্ল্যান',    duration:1,  original:1000, discount:0,  price:1000, note:'',              color:'#60a5fa' },
+    quarterly:{ label:'৩ মাসের প্ল্যান',  duration:3,  original:3000, discount:15, price:2550, note:'সীমিত সময়ের অফার', color:'#a855f7' },
+    biannual: { label:'৬ মাসের প্ল্যান',  duration:6,  original:6000, discount:17, price:5000, note:'জনপ্রিয়',       color:'#22d3ee' }
+  };
+  const allFeatures = [
+    'Dashboard ও Orders ম্যানেজমেন্ট',
+    'SR ও DM ম্যানেজমেন্ট',
+    'Shop ও Supplier ট্র্যাকিং',
+    'Expense ও Products',
+    'রিপোর্ট ও Analytics',
+    'Live GPS Tracking',
+    'Business Intelligence',
+    'Automation ও API Access',
+    'Priority Support'
+  ];
+
+  function buildCards(catalog) {
+    const keys = ['monthly','quarterly','biannual'];
+    container.innerHTML = keys.map(k => {
+      const p = catalog[k] || defaults[k];
+      const color = p.color || '#60a5fa';
+      const isActive = curPlan === k;
+      const userDiscount = discount || 0;
+      const finalPrice = userDiscount ? Math.round(p.price * (1 - userDiscount/100)) : p.price;
+      const featuresHtml = allFeatures.map(f => `<li><span style="color:${color}">✓</span> ${f}</li>`).join('');
+      const durationText = p.duration===1?'১ মাস':p.duration===3?'৩ মাস':'৬ মাস';
+      let btnHtml;
+      if (isActive) {
+        btnHtml = `<button class="pd-sub-cta" disabled style="opacity:.6">✓ বর্তমান প্ল্যান</button>`;
+      } else {
+        btnHtml = `<button class="pd-sub-cta" onclick="pdSendUpgradeRequest('${k}')"
+          style="background:linear-gradient(135deg,${color},${color}bb);color:#fff;border:none">
+          ⚡ ${p.label || planLabels[k]} নিন
+        </button>`;
+      }
+      return `<div class="pd-sub-card ${isActive?'is-active':''}"
+        style="${isActive?'border-color:'+color+';background:'+color+'10':''};position:relative">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${color};border-radius:14px 14px 0 0"></div>
+        ${isActive
+          ? `<div class="pd-sub-ribbon" style="background:${color};color:#fff">✓ সক্রিয়</div>`
+          : (p.note ? `<div class="pd-sub-ribbon" style="background:${color};color:#fff">🔥 ${p.note}</div>` : '')
+        }
+        <div class="pd-sub-plan-title" style="color:${color}">${p.label||planLabels[k]}</div>
+        <div class="pd-sub-plan-sub" style="font-size:13px;color:var(--t2);margin-bottom:10px">মেয়াদ: ${durationText}</div>
+        <div class="pd-sub-price-box">
+          ${p.original&&p.original>finalPrice?`<div class="pd-sub-orig-row"><span class="pd-sub-orig">৳${p.original.toLocaleString('en-IN')}</span><span class="pd-sub-disc">${p.discount||0}% ছাড়</span></div>`:''}
+          <div class="pd-sub-final">৳${finalPrice.toLocaleString('en-IN')} <small>টাকা</small></div>
+          ${userDiscount?`<div style="font-size:12px;color:var(--green);margin-top:4px">🏷️ আপনার বিশেষ ছাড়: ${userDiscount}%</div>`:''}
+        </div>
+        <ul class="pd-sub-features">${featuresHtml}</ul>
+        ${btnHtml}
+      </div>`;
+    }).join('');
+  }
+
+  if (FDB) {
+    FDB.ref('plan_catalog').once('value').then(snap => {
+      const catalog = snap.val() || {};
+      ['monthly','quarterly','biannual'].forEach(k=>{ if(!catalog[k])catalog[k]=defaults[k]; });
+      buildCards(catalog);
+    }).catch(() => { buildCards(defaults); });
+  } else {
+    buildCards(defaults);
+  }
+}
+
+// Upgrade request পাঠানো
+function pdSendUpgradeRequest(planKey) {
+  if (!BIZ_ID) { toast('লগইন করুন', false); return; }
+  const planNames = { monthly:'মাসিক', quarterly:'৩ মাসের', biannual:'৬ মাসের' };
+  if (!confirm(`"${planNames[planKey] || planKey}" প্ল্যানের জন্য রিকোয়েস্ট পাঠাবেন?`)) return;
+
+  FDB.ref('upgrade_requests/' + BIZ_ID).set({
+    uid: BIZ_ID,
+    requestedPlan: planKey,
+    businessName: (CURRENT_META && CURRENT_META.businessName) || (GEMINI_CONFIG && GEMINI_CONFIG.businessName) || BIZ_ID,
+    ownerName: (CURRENT_META && CURRENT_META.ownerName) || '',
+    requestedAt: new Date().toISOString(),
+    status: 'pending',
+    note: ''
+  }).then(() => {
+    closeSubscriptionModal();
+    toast('✅ রিকোয়েস্ট পাঠানো হয়েছে। Super Admin অনুমোদন করলে প্ল্যান activate হবে।');
+  }).catch(err => toast('রিকোয়েস্ট পাঠানো যায়নি: ' + err.message, false));
+}
+
+function hideSubscriptionLockScreen() {
+  const lock = document.getElementById('sub-lock-screen');
+  if (lock) lock.style.display = 'none';
+  document.getElementById('sb').style.display = '';
+  document.getElementById('main').style.display = '';
+}
+
+let _metaListenerStarted = false;
+function startMetaListener() {
+  if (!BIZ_ID || _metaListenerStarted) return;
+  _metaListenerStarted = true;
+  const planLabels = { monthly:'মাসিক', quarterly:'৩ মাস', biannual:'৬ মাস', trial:'ট্রায়াল' };
+  let _firstRun = true;
+  FDB.ref('businesses/' + BIZ_ID + '/meta').on('value', snap => {
+    const meta = snap.val();
+    if (!meta) return;
+    const wasLocked = document.getElementById('sub-lock-screen') &&
+      document.getElementById('sub-lock-screen').style.display === 'flex';
+
+    setupSubscriptionMeta(meta);
+    const status = evalSubscription(meta);
+
+    // Subscription মডাল খোলা থাকলে সাথে সাথে রিফ্রেশ করো (approve হওয়ার সময় খোলা থাকলেও)
+    const subModal = document.getElementById('pd-sub-modal');
+    if (subModal && subModal.style.display === 'flex' && typeof pdRenderSubscription === 'function') {
+      pdRenderSubscription();
+    }
+
+    if (status.active) {
+      if (wasLocked) {
+        hideSubscriptionLockScreen();
+        renderDash();
+        toast('✅ আপনার সাবস্ক্রিপশন সক্রিয় হয়েছে! এখন সব ফিচার ব্যবহার করতে পারবেন।');
+      }
+      if (status.daysLeft && status.daysLeft <= 3) {
+        showTrialBanner(status.expiryTs, planLabels[status.plan] || status.plan);
+      } else {
+        const banner = document.getElementById('trial-banner');
+        if (banner) banner.style.display = 'none';
+        clearInterval(_trialCountdownTimer);
+      }
+    } else {
+      CURRENT_META = meta;
+      const banner = document.getElementById('trial-banner');
+      if (banner) banner.style.display = 'none';
+      clearInterval(_trialCountdownTimer);
+      showSubscriptionLockScreen(meta);
+    }
+
+    // topbar plan badge আপডেট
+    const planEl = document.getElementById('pd-plan-badge');
+    if (planEl) planEl.textContent = planLabels[meta.plan] || meta.plan || '—';
+    _firstRun = false;
+  });
+}
+
+pdInit();
+pdRenderHeader();
 </script>
 
 </body>

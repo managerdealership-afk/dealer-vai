@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Admin — Dealer-Vai</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0a0f1e;--card:#111827;--s2:#1a2332;--border:#1e2d45;--border2:#2d3f57;
+    --blue:#3b82f6;--cyan:#06b6d4;--green:#10b981;--red:#ef4444;
+    --gold:#f59e0b;--purple:#a855f7;
+    --text:#f1f5f9;--t2:#94a3b8;--t3:#475569;
+  }
+  body{font-family:'Hind Siliguri',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  .topbar{background:var(--card);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .topbar .brand{display:flex;align-items:center;gap:10px}
+  .topbar .brand .icon{font-size:24px}
+  .topbar .brand .title{font-size:17px;font-weight:800}
+  .topbar .brand .sub{font-size:11px;color:var(--gold);font-weight:700;background:rgba(245,158,11,.12);padding:2px 8px;border-radius:10px;margin-left:6px}
+  .topbar .actions{display:flex;gap:8px;align-items:center}
+  .btn{border:none;border-radius:8px;padding:8px 14px;font-family:'Hind Siliguri',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+  .btn-primary{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff}
+  .btn-gh{background:var(--s2);color:var(--text);border:1px solid var(--border)}
+  .btn-red{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+  .btn-green{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.25)}
+  .btn-gold{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.25)}
+  .btn:hover{filter:brightness(1.1)}
+  .wrap{max-width:1200px;margin:0 auto;padding:20px 16px 60px}
+
+  /* Tabs */
+  .tab-bar{display:flex;gap:4px;margin-bottom:22px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:4px}
+  .tab-item{flex:1;text-align:center;padding:9px 12px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;color:var(--t2);transition:all .15s}
+  .tab-item.active{background:rgba(59,130,246,.15);color:var(--blue)}
+  .tab-pane{display:none}
+  .tab-pane.active{display:block}
+
+  /* Stats */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:22px}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center}
+  .stat-card .num{font-size:26px;font-weight:800}
+  .stat-card .lbl{font-size:12px;color:var(--t3);margin-top:4px}
+  .stat-card.c-blue .num{color:var(--blue)}
+  .stat-card.c-green .num{color:var(--green)}
+  .stat-card.c-gold .num{color:var(--gold)}
+  .stat-card.c-red .num{color:var(--red)}
+  .stat-card.c-purple .num{color:var(--purple)}
+
+  /* Toolbar */
+  .toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+  .search-box{flex:1;min-width:200px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:'Hind Siliguri',sans-serif;font-size:14px;outline:none}
+  .filter-chip{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:7px 14px;font-size:13px;cursor:pointer;color:var(--t2);font-weight:600}
+  .filter-chip.active{background:rgba(59,130,246,.15);border-color:var(--blue);color:var(--blue)}
+
+  /* Biz Cards */
+  .biz-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px}
+  .biz-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+  .biz-name{font-size:17px;font-weight:800;color:var(--text)}
+  .biz-owner{font-size:13px;color:var(--t2);margin-top:2px}
+  .biz-meta{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap;font-size:13px;color:var(--t2)}
+  .biz-meta span{display:flex;align-items:center;gap:5px}
+  .biz-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .biz-actions .btn{padding:6px 12px;font-size:12px}
+
+  /* Plan Badges */
+  .plan-badge{padding:4px 11px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap}
+  .plan-trial{background:rgba(245,158,11,.14);color:var(--gold);border:1px solid rgba(245,158,11,.3)}
+  .plan-paid{background:rgba(16,185,129,.14);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+  .plan-pro{background:rgba(168,85,247,.14);color:var(--purple);border:1px solid rgba(168,85,247,.3)}
+  .plan-enterprise{background:rgba(6,182,212,.14);color:var(--cyan);border:1px solid rgba(6,182,212,.3)}
+  .plan-expired{background:rgba(239,68,68,.14);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+
+  /* Plan Catalog Cards */
+  .catalog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:24px}
+  .catalog-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;position:relative;overflow:hidden}
+  .catalog-card .top-stripe{position:absolute;top:0;left:0;right:0;height:3px}
+  .catalog-card .plan-name{font-size:18px;font-weight:800;margin-bottom:4px}
+  .catalog-card .plan-price{font-size:28px;font-weight:800;margin:10px 0 4px}
+  .catalog-card .plan-price small{font-size:14px;font-weight:400;color:var(--t2)}
+  .catalog-card .plan-orig{font-size:13px;color:var(--t3);text-decoration:line-through;margin-bottom:6px}
+  .catalog-card .plan-disc{display:inline-block;background:rgba(16,185,129,.12);color:var(--green);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700;margin-bottom:12px}
+  .catalog-card .plan-limits{font-size:13px;color:var(--t2);margin-bottom:10px;line-height:1.9}
+  .catalog-card .edit-btn{width:100%;margin-top:6px}
+
+  /* Upgrade Requests */
+  .req-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px}
+  .req-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+  .req-name{font-size:16px;font-weight:700}
+  .req-meta{font-size:13px;color:var(--t2);margin-top:6px;line-height:1.8}
+  .req-badge{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+  .req-pending{background:rgba(245,158,11,.14);color:var(--gold);border:1px solid rgba(245,158,11,.3)}
+  .req-approved{background:rgba(16,185,129,.14);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+  .req-rejected{background:rgba(239,68,68,.14);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+  .req-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .req-actions .btn{font-size:12px;padding:6px 12px}
+
+  /* Login */
+  #login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;z-index:999}
+  .login-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:30px 26px;width:100%;max-width:380px}
+  .login-card .ic{font-size:38px;text-align:center;margin-bottom:8px}
+  .login-card h1{font-size:21px;text-align:center;margin-bottom:4px}
+  .login-card p{font-size:13px;color:var(--t3);text-align:center;margin-bottom:22px}
+  .fg{margin-bottom:13px}
+  .fg label{display:block;font-size:13px;color:var(--t2);margin-bottom:5px;font-weight:600}
+  .fg input,.fg textarea{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'Hind Siliguri',sans-serif;font-size:15px;outline:none}
+  .fg textarea{resize:vertical;min-height:70px}
+  .err-msg{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:12px;display:none}
+  .denied-box{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:12px;padding:18px;text-align:center;margin-top:14px}
+  .denied-box .ic{font-size:32px}
+  .denied-box p{color:#fca5a5;font-size:14px;margin-top:8px;line-height:1.6}
+  .empty-state{text-align:center;padding:60px 20px;color:var(--t3)}
+  .empty-state .ic{font-size:46px;margin-bottom:10px}
+  .ring{width:42px;height:42px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:500;padding:16px;overflow-y:auto}
+  .modal-overlay.show{display:flex}
+  .modal-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;width:100%;max-width:460px;margin:auto}
+  .modal-box h3{font-size:17px;margin-bottom:14px}
+  .modal-actions{display:flex;gap:8px;margin-top:18px}
+  .modal-actions .btn{flex:1;justify-content:center}
+  .section-title{font-size:16px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="ic">🛡️</div>
+    <h1>Super Admin</h1>
+    <p>Dealer-Vai · মালিক প্যানেল</p>
+    <div id="login-err" class="err-msg"></div>
+    <div class="fg"><label>ইমেইল</label><input type="email" id="sa-email" placeholder="super admin ইমেইল"></div>
+    <div class="fg"><label>পাসওয়ার্ড</label><input type="password" id="sa-pass" placeholder="পাসওয়ার্ড" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:11px" onclick="doLogin()">
+      <span id="login-btn-txt">🔐 লগইন করুন</span>
+    </button>
+    <div id="denied-box" class="denied-box" style="display:none">
+      <div class="ic">⛔</div>
+      <p>এই অ্যাকাউন্টের Super Admin অনুমতি নেই।</p>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none">
+  <div class="topbar">
+    <div class="brand">
+      <span class="icon">🛡️</span>
+      <span class="title">Dealer-Vai</span>
+      <span class="sub">SUPER ADMIN</span>
+    </div>
+    <div class="actions">
+      <button class="btn btn-gh" onclick="refreshAll()">🔄 রিফ্রেশ</button>
+      <button class="btn btn-red" onclick="doLogout()">🔒 লগআউট</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card c-blue"><div class="num" id="st-total">0</div><div class="lbl">মোট ব্যবসা</div></div>
+      <div class="stat-card c-gold"><div class="num" id="st-trial">0</div><div class="lbl">ট্রায়ালে</div></div>
+      <div class="stat-card c-green"><div class="num" id="st-paid">0</div><div class="lbl">পেইড</div></div>
+      <div class="stat-card c-red"><div class="num" id="st-expired">0</div><div class="lbl">মেয়াদ শেষ</div></div>
+      <div class="stat-card c-purple"><div class="num" id="st-requests">0</div><div class="lbl">আপগ্রেড রিকোয়েস্ট</div></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tab-bar">
+      <div class="tab-item active" data-tab="businesses" onclick="switchTab('businesses')">🏢 ব্যবসা সমূহ</div>
+      <div class="tab-item" data-tab="catalog" onclick="switchTab('catalog')">💳 Plan Catalog</div>
+      <div class="tab-item" data-tab="requests" onclick="switchTab('requests')">📨 আপগ্রেড রিকোয়েস্ট <span id="req-badge" style="display:none;background:var(--red);color:#fff;border-radius:10px;font-size:11px;padding:1px 6px;margin-left:4px">0</span></div>
+    </div>
+
+    <!-- TAB: BUSINESSES -->
+    <div class="tab-pane active" id="tab-businesses">
+      <div class="toolbar">
+        <input class="search-box" id="search-box" placeholder="🔍 ব্যবসা বা মালিকের নাম খুঁজুন..." oninput="renderList()">
+        <span class="filter-chip active" data-f="all" onclick="setFilter('all')">সব</span>
+        <span class="filter-chip" data-f="trial" onclick="setFilter('trial')">ট্রায়াল</span>
+        <span class="filter-chip" data-f="paid" onclick="setFilter('paid')">পেইড</span>
+        <span class="filter-chip" data-f="expired" onclick="setFilter('expired')">মেয়াদ শেষ</span>
+      </div>
+      <div id="loading-data" class="empty-state" style="display:none">
+        <div class="ring" style="margin:0 auto 14px"></div>
+        <p>লোড হচ্ছে...</p>
+      </div>
+      <div id="biz-list"></div>
+      <div id="empty-list" class="empty-state" style="display:none"><div class="ic">🔍</div><p>কোনো ব্যবসা পাওয়া যায়নি</p></div>
+    </div>
+
+    <!-- TAB: PLAN CATALOG -->
+    <div class="tab-pane" id="tab-catalog">
+      <div class="section-title">💳 Plan Catalog — দাম ও ফিচার সেট করুন</div>
+      <div class="catalog-grid" id="catalog-grid">
+        <div class="empty-state"><div class="ring" style="margin:0 auto 14px"></div><p>লোড হচ্ছে...</p></div>
+      </div>
+    </div>
+
+    <!-- TAB: UPGRADE REQUESTS -->
+    <div class="tab-pane" id="tab-requests">
+      <div class="section-title">📨 আপগ্রেড রিকোয়েস্ট</div>
+      <div id="req-filter" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <span class="filter-chip active" data-rf="pending" onclick="setReqFilter('pending')">⏳ পেন্ডিং</span>
+        <span class="filter-chip" data-rf="approved" onclick="setReqFilter('approved')">✅ অনুমোদিত</span>
+        <span class="filter-chip" data-rf="rejected" onclick="setReqFilter('rejected')">❌ বাতিল</span>
+        <span class="filter-chip" data-rf="all" onclick="setReqFilter('all')">সব</span>
+      </div>
+      <div id="req-list"></div>
+      <div id="req-empty" class="empty-state" style="display:none"><div class="ic">📭</div><p>কোনো রিকোয়েস্ট নেই</p></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PLAN CHANGE MODAL -->
+<div class="modal-overlay" id="plan-modal">
+  <div class="modal-box">
+    <h3 id="plan-modal-title">প্ল্যান পরিবর্তন</h3>
+    <div class="fg">
+      <label>প্ল্যান নির্বাচন করুন</label>
+      <select id="plan-select" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:10px;color:var(--text);font-family:'Hind Siliguri',sans-serif;font-size:15px;outline:none" onchange="onPlanSelectChange()">
+        <option value="trial">⏳ ট্রায়াল (১৪ দিন রিসেট)</option>
+        <option value="monthly">🔵 মাসিক প্ল্যান (১ মাস)</option>
+        <option value="quarterly">💜 ৩ মাসের প্ল্যান</option>
+        <option value="biannual">🔷 ৬ মাসের প্ল্যান</option>
+        <option value="expired">🔒 মেয়াদ শেষ (লক করুন)</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>ম্যানুয়াল ছাড় (%) — ঐচ্ছিক</label>
+      <input type="number" id="plan-discount" placeholder="যেমন: 10" min="0" max="100">
+    </div>
+    <div class="fg">
+      <label>ছাড়ের কারণ / নোট</label>
+      <input type="text" id="plan-discount-note" placeholder="যেমন: বিশেষ অফার">
+    </div>
+    <div class="fg">
+      <label>মেয়াদ শেষের তারিখ (ঐচ্ছিক)</label>
+      <input type="date" id="plan-expiry">
+    </div>
+    <div id="plan-preview" style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:10px;padding:12px;margin-top:2px;font-size:13px;color:var(--t2);line-height:1.8;min-height:40px"></div>
+    <div class="modal-actions">
+      <button class="btn btn-gh" onclick="closePlanModal()">বাতিল</button>
+      <button class="btn btn-primary" onclick="savePlanChange()">✅ সেভ করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- CATALOG EDIT MODAL -->
+<div class="modal-overlay" id="catalog-modal">
+  <div class="modal-box" style="max-width:500px">
+    <h3 id="catalog-modal-title">Plan সম্পাদনা করুন</h3>
+    <input type="hidden" id="catalog-plan-key">
+    <div class="fg"><label>Plan নাম (display)</label><input id="c-label" placeholder="যেমন: মাসিক প্ল্যান"></div>
+    <div class="fg"><label>মেয়াদকাল (মাস)</label><input type="number" id="c-duration" placeholder="1" min="1" readonly style="opacity:.7"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fg"><label>মূল দাম (৳)</label><input type="number" id="c-original" placeholder="1000" min="0"></div>
+      <div class="fg"><label>ছাড় (%)</label><input type="number" id="c-discount" placeholder="0" min="0" max="100"></div>
+    </div>
+    <div class="fg">
+      <label>চূড়ান্ত দাম (৳) <small style="color:var(--t3)">(ছাড় দেওয়ার পরে)</small></label>
+      <input type="number" id="c-price" placeholder="1000" min="0">
+    </div>
+    <div class="fg"><label>বিশেষ নোট (admin portal এ দেখাবে)</label><textarea id="c-note" placeholder="যেমন: সীমিত সময়ের অফার"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-gh" onclick="closeCatalogModal()">বাতিল</button>
+      <button class="btn btn-primary" onclick="saveCatalogPlan()">💾 সেভ করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- APPROVE MODAL -->
+<div class="modal-overlay" id="approve-modal">
+  <div class="modal-box">
+    <h3 id="approve-modal-title">রিকোয়েস্ট অনুমোদন</h3>
+    <input type="hidden" id="approve-uid">
+    <input type="hidden" id="approve-req-plan">
+    <div class="fg">
+      <label>প্ল্যান নির্বাচন করুন</label>
+      <select id="approve-plan-select" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:10px;color:var(--text);font-family:'Hind Siliguri',sans-serif;font-size:15px;outline:none">
+        <option value="monthly">🔵 মাসিক প্ল্যান (১ মাস)</option>
+        <option value="quarterly">💜 ৩ মাসের প্ল্যান</option>
+        <option value="biannual">🔷 ৬ মাসের প্ল্যান</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>ম্যানুয়াল ছাড় (%)</label>
+      <input type="number" id="approve-discount" placeholder="0" min="0" max="100" value="0">
+    </div>
+    <div class="fg">
+      <label>মেয়াদ শেষ তারিখ</label>
+      <input type="date" id="approve-expiry">
+    </div>
+    <div class="fg">
+      <label>নোট (admin কে দেখানো হবে)</label>
+      <input type="text" id="approve-note" placeholder="অনুমোদনের কারণ">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gh" onclick="closeApproveModal()">বাতিল</button>
+      <button class="btn btn-green" onclick="confirmApprove()">✅ অনুমোদন করুন</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Firebase ──
+const FB_CFG = {
+  apiKey:"AIzaSyCP2RmMbWM43H6w_7_6YKtD5bXkoCoKTTw",
+  authDomain:"dealer-vai.firebaseapp.com",
+  databaseURL:"https://dealer-vai-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"dealer-vai"
+};
+let FDB, FAUTH, currentUser, allBusinesses=[], allRequests=[], currentFilter='all', currentReqFilter='pending', editingBizId=null;
+
+function loadFirebaseSDK(cb) {
+  if (window.firebase) { FDB=firebase.database(); FAUTH=firebase.auth(); cb(true); return; }
+  const s1=document.createElement('script'); s1.src='https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
+  s1.onload=()=>{
+    const s2=document.createElement('script'); s2.src='https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js';
+    s2.onload=()=>{
+      const s3=document.createElement('script'); s3.src='https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
+      s3.onload=()=>{ firebase.initializeApp(FB_CFG); FDB=firebase.database(); FAUTH=firebase.auth(); cb(true); };
+      s3.onerror=()=>cb(false); document.head.appendChild(s3);
+    };
+    s2.onerror=()=>cb(false); document.head.appendChild(s2);
+  };
+  s1.onerror=()=>cb(false); document.head.appendChild(s1);
+}
+
+// ── Plan Definitions ──
+// ── Plan Definitions — Duration Based ──
+const SA_PLAN_DEFS = {
+  monthly:  { label:'মাসিক প্ল্যান',   duration:1,  color:'#60a5fa' },
+  quarterly:{ label:'৩ মাসের প্ল্যান', duration:3,  color:'#a855f7' },
+  biannual: { label:'৬ মাসের প্ল্যান', duration:6,  color:'#22d3ee' },
+  trial:    { label:'ট্রায়াল',          duration:0,  color:'#fbbf24' }
+};
+
+const SA_PLAN_PREVIEWS = {
+  trial:    '⏳ ১৪ দিনের ফ্রি ট্রায়াল — সব ফিচার উন্মুক্ত',
+  monthly:  '🔵 ১ মাসের সাবস্ক্রিপশন — সব ফিচার উন্মুক্ত',
+  quarterly:'💜 ৩ মাসের সাবস্ক্রিপশন — সব ফিচার উন্মুক্ত · সাশ্রয়ী',
+  biannual: '🔷 ৬ মাসের সাবস্ক্রিপশন — সব ফিচার উন্মুক্ত · সর্বোচ্চ সাশ্রয়',
+  expired:  '🔒 ব্যবহারকারী সম্পূর্ণ লক হবে'
+};
+
+// ── Auth ──
+function doLogin() {
+  const email=document.getElementById('sa-email').value.trim();
+  const pass=document.getElementById('sa-pass').value;
+  if (!email||!pass) { showErr('ইমেইল ও পাসওয়ার্ড দিন'); return; }
+  document.getElementById('login-btn-txt').textContent='⏳ লগইন হচ্ছে...';
+  FAUTH.signInWithEmailAndPassword(email, pass)
+    .then(cred => {
+      return FDB.ref('super_admins/'+cred.user.uid).once('value').then(snap => {
+        if (snap.val() === true) { bootApp(cred.user); }
+        else { FAUTH.signOut(); showDenied(); }
+      });
+    })
+    .catch(err => { showErr('লগইন ব্যর্থ: '+err.message); document.getElementById('login-btn-txt').textContent='🔐 লগইন করুন'; });
+}
+function doLogout(){ FAUTH.signOut().then(()=>location.reload()); }
+function showErr(m){ const e=document.getElementById('login-err'); e.textContent=m; e.style.display='block'; document.getElementById('login-btn-txt').textContent='🔐 লগইন করুন'; }
+function showDenied(){ document.getElementById('denied-box').style.display='block'; document.getElementById('login-btn-txt').textContent='🔐 লগইন করুন'; }
+function bootApp(user){ currentUser=user; document.getElementById('login-screen').style.display='none'; document.getElementById('app').style.display='block'; refreshAll(); }
+
+// ── Load All ──
+function refreshAll(){ loadAllBusinesses(); loadCatalog(); loadRequests(); }
+
+function loadAllBusinesses() {
+  document.getElementById('loading-data').style.display='flex';
+  FDB.ref('businesses').once('value').then(snap => {
+    allBusinesses = [];
+    snap.forEach(child => {
+      if (currentUser && child.key === currentUser.uid) return;
+      const meta = child.child('meta').val() || {};
+      allBusinesses.push({ uid: child.key, ...meta });
+    });
+    document.getElementById('loading-data').style.display='none';
+    renderStats(); renderList();
+  }).catch(err => {
+    document.getElementById('loading-data').style.display='none';
+    document.getElementById('biz-list').innerHTML = `<div class="empty-state"><div class="ic">❌</div><p>লোড ব্যর্থ: ${err.message}<br>Security Rules চেক করুন।</p></div>`;
+  });
+}
+
+// ── Stats ──
+function evalStatus(biz) {
+  const now = Date.now();
+  if (biz.plan==='monthly'||biz.plan==='quarterly'||biz.plan==='biannual') {
+    if (!biz.planExpiry) return biz.plan;
+    return now < new Date(biz.planExpiry).getTime() ? biz.plan : 'expired';
+  }
+  if (biz.plan==='trial'||!biz.plan) {
+    if (!biz.trialEnds) return 'trial';
+    return now < new Date(biz.trialEnds).getTime() ? 'trial' : 'expired';
+  }
+  // Legacy
+  if (biz.plan==='paid'||biz.plan==='basic'||biz.plan==='pro'||biz.plan==='enterprise') return 'paid_legacy';
+  return biz.plan||'unknown';
+}
+
+function renderStats() {
+  let trial=0, paid=0, expired=0;
+  allBusinesses.forEach(b=>{
+    const s=evalStatus(b);
+    if(s==='trial') trial++;
+    else if(['monthly','quarterly','biannual','paid_legacy'].includes(s)) paid++;
+    else if(s==='expired') expired++;
+  });
+  document.getElementById('st-total').textContent=allBusinesses.length;
+  document.getElementById('st-trial').textContent=trial;
+  document.getElementById('st-paid').textContent=paid;
+  document.getElementById('st-expired').textContent=expired;
+}
+
+function setFilter(f){ currentFilter=f; document.querySelectorAll('[data-f]').forEach(c=>c.classList.toggle('active',c.dataset.f===f)); renderList(); }
+
+function renderList() {
+  const q=(document.getElementById('search-box').value||'').toLowerCase();
+  let list=allBusinesses.filter(b=>{
+    const matchQ=!q||(b.businessName||'').toLowerCase().includes(q)||(b.ownerName||'').toLowerCase().includes(q)||(b.email||'').toLowerCase().includes(q);
+    const status=evalStatus(b);
+    const matchF=currentFilter==='all'||status===currentFilter
+      ||(currentFilter==='paid'&&['monthly','quarterly','biannual','paid_legacy'].includes(status));
+    return matchQ&&matchF;
+  });
+  const listEl=document.getElementById('biz-list');
+  const emptyEl=document.getElementById('empty-list');
+  if(!list.length){ listEl.innerHTML=''; emptyEl.style.display='block'; return; }
+  emptyEl.style.display='none';
+  const planLabel={
+    trial:'⏳ ট্রায়াল', monthly:'🔵 মাসিক', quarterly:'💜 ৩ মাস',
+    biannual:'🔷 ৬ মাস', expired:'🔒 মেয়াদ শেষ', paid_legacy:'✅ পেইড (পুরনো)'
+  };
+  const planClass={
+    trial:'plan-trial', monthly:'plan-paid', quarterly:'plan-pro',
+    biannual:'plan-enterprise', expired:'plan-expired', paid_legacy:'plan-paid'
+  };
+  listEl.innerHTML=list.map(b=>{
+    const status=evalStatus(b);
+    const created=b.createdAt?new Date(b.createdAt).toLocaleDateString('bn-BD'):'—';
+    const trialEnd=b.trialEnds?new Date(b.trialEnds).toLocaleDateString('bn-BD'):'—';
+    const expiry=b.planExpiry?`<span>📅 মেয়াদ: ${new Date(b.planExpiry).toLocaleDateString('bn-BD')}</span>`:'';
+    const disc=b.discount?`<span>🏷️ ছাড়: ${b.discount}% ${b.discountNote?'('+b.discountNote+')':''}</span>`:'';
+    return `<div class="biz-card">
+      <div class="biz-head">
+        <div><div class="biz-name">${esc(b.businessName||'নামহীন ব্যবসা')}</div><div class="biz-owner">👤 ${esc(b.ownerName||'—')}</div></div>
+        <span class="plan-badge ${planClass[status]||''}">${planLabel[status]||status}</span>
+      </div>
+      <div class="biz-meta">
+        <span>📞 ${esc(b.phone||'—')}</span>
+        <span>✉️ ${esc(b.email||'—')}</span>
+        <span>📅 যোগদান: ${created}</span>
+        ${status==='trial'?`<span>⏰ ট্রায়াল শেষ: ${trialEnd}</span>`:''}
+        ${expiry}${disc}
+      </div>
+      <div class="biz-actions">
+        <button class="btn btn-primary" onclick="openPlanModal('${b.uid}','${esc(b.businessName||'')}')">💳 প্ল্যান পরিবর্তন</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ── Plan Change Modal ──
+function onPlanSelectChange() {
+  const val=document.getElementById('plan-select').value;
+  document.getElementById('plan-preview').textContent=SA_PLAN_PREVIEWS[val]||'';
+}
+function openPlanModal(uid,name) {
+  editingBizId=uid;
+  document.getElementById('plan-modal-title').textContent='💳 '+name+' — প্ল্যান পরিবর্তন';
+  const biz=allBusinesses.find(b=>b.uid===uid);
+  const curPlan=biz?(biz.plan||'trial'):'trial';
+  const validPlans=['trial','monthly','quarterly','biannual','expired'];
+  document.getElementById('plan-select').value=validPlans.includes(curPlan)?curPlan:'trial';
+  document.getElementById('plan-discount').value=biz&&biz.discount?biz.discount:'';
+  document.getElementById('plan-discount-note').value=biz&&biz.discountNote?biz.discountNote:'';
+  // Auto expiry based on plan duration
+  const planDef=SA_PLAN_DEFS[curPlan]||SA_PLAN_DEFS.monthly;
+  const defExp=new Date(); defExp.setMonth(defExp.getMonth()+(planDef.duration||1));
+  document.getElementById('plan-expiry').value=biz&&biz.planExpiry?biz.planExpiry.slice(0,10):defExp.toISOString().slice(0,10);
+  onPlanSelectChange();
+  document.getElementById('plan-modal').classList.add('show');
+}
+function closePlanModal(){ document.getElementById('plan-modal').classList.remove('show'); editingBizId=null; }
+
+function savePlanChange() {
+  if(!editingBizId)return;
+  const newPlan=document.getElementById('plan-select').value;
+  const discount=parseFloat(document.getElementById('plan-discount').value)||0;
+  const discountNote=document.getElementById('plan-discount-note').value.trim();
+  const expiryVal=document.getElementById('plan-expiry').value;
+  const updates={plan:newPlan, discount, discountNote, updatedAt:new Date().toISOString()};
+
+  if(newPlan==='trial'){
+    updates.trialEnds=new Date(Date.now()+14*24*60*60*1000).toISOString();
+    updates.planExpiry=null;
+  } else if(newPlan==='expired'){
+    updates.plan='trial';
+    updates.trialEnds=new Date(Date.now()-1000).toISOString();
+    updates.planExpiry=null;
+  } else {
+    // monthly/quarterly/biannual
+    const planDef=SA_PLAN_DEFS[newPlan];
+    if(expiryVal){
+      updates.planExpiry=new Date(expiryVal).toISOString();
+    } else {
+      const exp=new Date(); exp.setMonth(exp.getMonth()+(planDef?planDef.duration:1));
+      updates.planExpiry=exp.toISOString();
+    }
+    updates.trialEnds=null;
+  }
+
+  FDB.ref('businesses/'+editingBizId+'/meta').update(updates)
+    .then(()=>{ closePlanModal(); loadAllBusinesses(); showToast('✅ প্ল্যান আপডেট হয়েছে'); })
+    .catch(err=>alert('ব্যর্থ হয়েছে: '+err.message));
+}
+
+// ── Plan Catalog ──
+function loadCatalog() {
+  FDB.ref('plan_catalog').once('value').then(snap => {
+    let catalog=snap.val()||{};
+    const defaults={
+      monthly:  {label:'মাসিক প্ল্যান',   duration:1, original:1000, discount:0,  price:1000, note:'',               color:'#60a5fa'},
+      quarterly:{label:'৩ মাসের প্ল্যান', duration:3, original:3000, discount:15, price:2550, note:'সীমিত সময়ের অফার', color:'#a855f7'},
+      biannual: {label:'৬ মাসের প্ল্যান', duration:6, original:6000, discount:17, price:5000, note:'জনপ্রিয়',        color:'#22d3ee'}
+    };
+    ['monthly','quarterly','biannual'].forEach(k=>{ if(!catalog[k]) catalog[k]=defaults[k]; });
+    renderCatalog(catalog);
+  });
+}
+
+function renderCatalog(catalog) {
+  const keys=['monthly','quarterly','biannual'];
+  const planColors={monthly:'#60a5fa',quarterly:'#a855f7',biannual:'#22d3ee'};
+  document.getElementById('catalog-grid').innerHTML=keys.map(k=>{
+    const p=catalog[k]||{};
+    const color=p.color||planColors[k];
+    const dur=p.duration===1?'১ মাস':p.duration===3?'৩ মাস':'৬ মাস';
+    return `<div class="catalog-card">
+      <div class="top-stripe" style="background:${color}"></div>
+      <div class="plan-name" style="color:${color}">${p.label||k}</div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:8px">মেয়াদ: ${dur}</div>
+      <div class="plan-price">৳${(p.price||0).toLocaleString('en-IN')} <small>/সাবস্ক্রিপশন</small></div>
+      ${p.original&&p.original>p.price?`<div class="plan-orig">৳${p.original.toLocaleString('en-IN')}</div><div class="plan-disc">${p.discount||0}% ছাড়</div>`:''}
+      ${p.note?`<div style="font-size:12px;color:var(--gold);margin-bottom:8px">⭐ ${p.note}</div>`:''}
+      <button class="btn btn-gh edit-btn" onclick="openCatalogModal('${k}')">✏️ সম্পাদনা করুন</button>
+    </div>`;
+  }).join('');
+}
+
+function openCatalogModal(key) {
+  const durMap={monthly:1,quarterly:3,biannual:6};
+  FDB.ref('plan_catalog/'+key).once('value').then(snap=>{
+    const d=snap.val()||{};
+    document.getElementById('catalog-modal-title').textContent='✏️ '+(d.label||key)+' সম্পাদনা';
+    document.getElementById('catalog-plan-key').value=key;
+    document.getElementById('c-label').value=d.label||'';
+    document.getElementById('c-duration').value=d.duration||durMap[key]||1;
+    document.getElementById('c-original').value=d.original||'';
+    document.getElementById('c-discount').value=d.discount||'';
+    document.getElementById('c-price').value=d.price||'';
+    document.getElementById('c-note').value=d.note||'';
+    document.getElementById('catalog-modal').classList.add('show');
+  });
+}
+function closeCatalogModal(){ document.getElementById('catalog-modal').classList.remove('show'); }
+
+document.addEventListener('input',function(e){
+  if(e.target.id==='c-discount'||e.target.id==='c-original'){
+    const orig=parseFloat(document.getElementById('c-original').value)||0;
+    const disc=parseFloat(document.getElementById('c-discount').value)||0;
+    if(orig) document.getElementById('c-price').value=Math.round(orig*(1-disc/100));
+  }
+});
+
+function saveCatalogPlan() {
+  const key=document.getElementById('catalog-plan-key').value;
+  const durMap={monthly:1,quarterly:3,biannual:6};
+  const data={
+    label:document.getElementById('c-label').value.trim()||key,
+    duration:durMap[key]||1,
+    original:parseFloat(document.getElementById('c-original').value)||0,
+    discount:parseFloat(document.getElementById('c-discount').value)||0,
+    price:parseFloat(document.getElementById('c-price').value)||0,
+    note:document.getElementById('c-note').value.trim(),
+    updatedAt:new Date().toISOString()
+  };
+  FDB.ref('plan_catalog/'+key).update(data)
+    .then(()=>{ closeCatalogModal(); loadCatalog(); showToast('✅ Plan Catalog আপডেট হয়েছে'); })
+    .catch(err=>alert('ব্যর্থ: '+err.message));
+}
+
+// ── Upgrade Requests ──
+// নোট: এটি রিয়েল-টাইম লিসেনার (.on) — অ্যাডমিন পোর্টাল থেকে রিকোয়েস্ট পাঠালেই
+// এখানে সাথে সাথে (auto) সিংক হবে, বাটনে চাপ দিয়ে রিফ্রেশ করার দরকার নেই।
+let _reqListenerAttached = false;
+function loadRequests() {
+  if (_reqListenerAttached) return; // ইতিমধ্যে রিয়েল-টাইম লিসেনার চালু আছে
+  _reqListenerAttached = true;
+  FDB.ref('upgrade_requests').on('value', snap=>{
+    const rawRequests=[];
+    snap.forEach(child=>{ rawRequests.push({uid:child.key,...child.val()}); });
+
+    // businessName না থাকলে businesses/{uid}/meta থেকে নিয়ে আসো
+    const nameFetches = rawRequests
+      .filter(r => !r.businessName || r.businessName === r.uid)
+      .map(r =>
+        FDB.ref('businesses/'+r.uid+'/meta').once('value').then(ms=>{
+          const m=ms.val();
+          if(m && m.businessName) r.businessName = m.businessName;
+          if(m && m.ownerName)    r.ownerName    = m.ownerName;
+        }).catch(()=>{})
+      );
+
+    Promise.all(nameFetches).then(()=>{
+      allRequests = rawRequests;
+      const pending=allRequests.filter(r=>r.status==='pending').length;
+      document.getElementById('st-requests').textContent=pending;
+      const badge=document.getElementById('req-badge');
+      if(pending>0){ badge.textContent=pending; badge.style.display='inline'; }
+      else badge.style.display='none';
+      renderRequests();
+    });
+  });
+}
+
+function setReqFilter(f){ currentReqFilter=f; document.querySelectorAll('[data-rf]').forEach(c=>c.classList.toggle('active',c.dataset.rf===f)); renderRequests(); }
+
+function renderRequests() {
+  let list=allRequests.filter(r=>currentReqFilter==='all'||r.status===currentReqFilter);
+  list.sort((a,b)=>new Date(b.requestedAt)-new Date(a.requestedAt));
+  const el=document.getElementById('req-list');
+  const empty=document.getElementById('req-empty');
+  if(!list.length){ el.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  const planLabel={monthly:'🔵 মাসিক',quarterly:'💜 ৩ মাস',biannual:'🔷 ৬ মাস'};
+  const statusBadge={pending:'req-pending',approved:'req-approved',rejected:'req-rejected'};
+  const statusLabel={pending:'⏳ পেন্ডিং',approved:'✅ অনুমোদিত',rejected:'❌ বাতিল'};
+  el.innerHTML=list.map(r=>{
+    const date=r.requestedAt?new Date(r.requestedAt).toLocaleString('bn-BD'):'—';
+    const actions=r.status==='pending'?`
+      <button class="btn btn-green" onclick="openApproveModal('${r.uid}','${r.requestedPlan||'monthly'}','${esc(r.businessName||'')}')">✅ অনুমোদন</button>
+      <button class="btn btn-red" onclick="rejectRequest('${r.uid}')">❌ বাতিল</button>`:'';
+    return `<div class="req-card">
+      <div class="req-head">
+        <div>
+          <div class="req-name">${esc(r.businessName && r.businessName!==r.uid ? r.businessName : '—')}</div>
+          ${r.ownerName?`<div style="font-size:12px;color:var(--t3,#94a3b8);margin-top:2px">👤 ${esc(r.ownerName)}</div>`:''}
+          <div style="font-size:11px;color:var(--t3,#94a3b8);margin-top:2px;word-break:break-all">${esc(r.uid)}</div>
+        </div>
+        <span class="req-badge ${statusBadge[r.status]||'req-pending'}">${statusLabel[r.status]||r.status}</span>
+      </div>
+      <div class="req-meta">
+        📋 রিকোয়েস্ট: <strong>${planLabel[r.requestedPlan]||r.requestedPlan||'—'}</strong><br>
+        🕐 সময়: ${date}<br>
+        ${r.note?`💬 নোট: ${esc(r.note)}<br>`:''}
+        ${r.approvedAt?`✅ অনুমোদন: ${new Date(r.approvedAt).toLocaleString('bn-BD')}`:''}
+        ${r.rejectedAt?`❌ বাতিল: ${new Date(r.rejectedAt).toLocaleString('bn-BD')}`:''}
+      </div>
+      ${actions?`<div class="req-actions">${actions}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function openApproveModal(uid,plan,name) {
+  document.getElementById('approve-modal-title').textContent='✅ '+name+' — অনুমোদন করুন';
+  document.getElementById('approve-uid').value=uid;
+  document.getElementById('approve-req-plan').value=plan;
+  const validPlans=['monthly','quarterly','biannual'];
+  document.getElementById('approve-plan-select').value=validPlans.includes(plan)?plan:'monthly';
+  document.getElementById('approve-discount').value='0';
+  document.getElementById('approve-note').value='';
+  // Auto set expiry based on requested plan
+  const durMap={monthly:1,quarterly:3,biannual:6};
+  const exp=new Date(); exp.setMonth(exp.getMonth()+(durMap[plan]||1));
+  document.getElementById('approve-expiry').value=exp.toISOString().slice(0,10);
+  document.getElementById('approve-modal').classList.add('show');
+}
+function closeApproveModal(){ document.getElementById('approve-modal').classList.remove('show'); }
+
+function confirmApprove() {
+  const uid=document.getElementById('approve-uid').value;
+  const newPlan=document.getElementById('approve-plan-select').value;
+  const discount=parseFloat(document.getElementById('approve-discount').value)||0;
+  const expiry=document.getElementById('approve-expiry').value;
+  const note=document.getElementById('approve-note').value.trim();
+  const durMap={monthly:1,quarterly:3,biannual:6};
+  const exp=expiry?new Date(expiry):(()=>{const d=new Date();d.setMonth(d.getMonth()+(durMap[newPlan]||1));return d;})();
+  const metaUpdates={
+    plan:newPlan, discount, discountNote:note,
+    planExpiry:exp.toISOString(),
+    trialEnds:null, updatedAt:new Date().toISOString()
+  };
+  const reqUpdates={status:'approved',approvedAt:new Date().toISOString(),approvedPlan:newPlan,approveNote:note};
+  Promise.all([
+    FDB.ref('businesses/'+uid+'/meta').update(metaUpdates),
+    FDB.ref('upgrade_requests/'+uid).update(reqUpdates)
+  ]).then(()=>{ closeApproveModal(); loadAllBusinesses(); loadRequests(); showToast('✅ অনুমোদন সম্পন্ন হয়েছে'); })
+    .catch(err=>alert('ব্যর্থ: '+err.message));
+}
+
+function rejectRequest(uid) {
+  if(!confirm('এই রিকোয়েস্ট বাতিল করবেন?'))return;
+  FDB.ref('upgrade_requests/'+uid).update({status:'rejected',rejectedAt:new Date().toISOString()})
+    .then(()=>{ loadRequests(); showToast('রিকোয়েস্ট বাতিল করা হয়েছে'); })
+    .catch(err=>alert('ব্যর্থ: '+err.message));
+}
+
+// ── Tabs ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab-item').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+tab));
+}
+
+// ── Toast ──
+function showToast(msg) {
+  let t=document.getElementById('sa-toast');
+  if(!t){ t=document.createElement('div'); t.id='sa-toast';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid var(--border2);color:var(--text);padding:10px 20px;border-radius:10px;font-size:14px;z-index:9999;font-family:"Hind Siliguri",sans-serif;box-shadow:0 4px 20px rgba(0,0,0,.5)';
+    document.body.appendChild(t); }
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(t._timer); t._timer=setTimeout(()=>t.style.opacity='0',2500);
+}
+
+// ── Boot ──
+window.onload=()=>{
+  loadFirebaseSDK(ready=>{
+    if(!ready){ showErr('Firebase লোড হয়নি'); return; }
+    FAUTH.onAuthStateChanged(user=>{
+      if(user){
+        FDB.ref('super_admins/'+user.uid).once('value').then(snap=>{
+          if(snap.val()===true){ bootApp(user); }
+        });
+      }
+    });
+  });
+};
+</script>
+</body>
+</html>

@@ -150,23 +150,33 @@ body{background:var(--bg);color:var(--text);font-family:'Hind Siliguri',sans-ser
   <div class="lcard">
     <div style="font-size:38px;text-align:center;margin-bottom:5px">📋</div>
     <div style="font-size:21px;font-weight:800;text-align:center">SR পোর্টাল</div>
-    <div style="font-size:14px;color:var(--t3);text-align:center;margin-top:3px;margin-bottom:18px">অর্ডার এন্ট্রি সিস্টেম</div>
-    <div class="fg"><label>SR নাম *</label><select id="login-sr"><option value="">— SR বেছে নিন —</option></select></div>
+    <div style="font-size:14px;color:var(--t3);text-align:center;margin-top:3px;margin-bottom:18px">Dealer-Vai · অর্ডার এন্ট্রি সিস্টেম</div>
+    <div id="sr-auth-err" style="display:none;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:12px;text-align:center"></div>
+    <div class="fg"><label>মোবাইল নাম্বার *</label><input type="tel" id="login-mobile" placeholder="01XXXXXXXXX" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <div class="fg"><label>পাসওয়ার্ড *</label><input type="password" id="login-pass" placeholder="পাসওয়ার্ড দিন" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div class="lerr" id="lerr">❌ ভুল পাসওয়ার্ড বা SR নির্বাচন করুন!</div>
-    <button class="btn-login" onclick="doLogin()">📋 লগইন করুন</button>
+    <div class="lerr" id="lerr">❌ মোবাইল বা পাসওয়ার্ড ভুল!</div>
+    <button class="btn-login" id="login-btn" onclick="doLogin()">📋 লগইন করুন</button>
     <div style="text-align:center;margin-top:13px;padding-top:11px;border-top:1px solid var(--border)">
-      <a href="admin.html" style="color:var(--t3);font-size:13px;text-decoration:none">🏪 অ্যাডমিন প্যানেল</a>
+      <a href="admin-portal.html" style="color:var(--t3);font-size:13px;text-decoration:none">🏪 অ্যাডমিন প্যানেল</a>
     </div>
   </div>
-  <div style="margin-top:11px;font-size:12px;color:#3d5a73">🔥 Firebase Realtime DB · অনলাইন সিঙ্ক</div>
+  <div style="margin-top:11px;font-size:12px;color:#3d5a73">🔥 Firebase Auth · dealer-vai project</div>
 </div>
 <div id="topbar">
   <div id="ptitle">📋 অর্ডার এন্ট্রি</div>
   <div class="tdate" id="today-lbl"></div>
-  <div class="tbadge" id="sr-badge">👤</div>
   <button class="btn btn-gh" onclick="toggleThemePicker()" id="theme-btn" title="থিম পরিবর্তন করুন" style="font-size:13px;padding:4px 9px">🎨 থিম</button>
-  <button class="btn btn-d" onclick="srLogout()">🔒 লগআউট</button>
+  <div id="sr-profile-wrap" style="position:relative;display:flex;align-items:center;gap:7px">
+    <span id="sr-profile-name" style="font-size:14px;font-weight:600;color:var(--t2);white-space:nowrap"></span>
+    <div id="sr-avatar-btn" onclick="toggleSrProfileMenu(event)" style="width:36px;height:36px;border-radius:50%;background:var(--s2);border:2px solid var(--green);cursor:pointer;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <img id="sr-avatar-img" src="" style="display:none;width:100%;height:100%;border-radius:50%;object-fit:cover;position:absolute;top:0;left:0">
+      <span id="sr-avatar-initial" style="font-size:15px;font-weight:800;color:var(--green)"></span>
+    </div>
+    <div id="sr-profile-menu" style="display:none;position:absolute;top:44px;right:0;background:var(--s1);border:1px solid var(--border2);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.45);min-width:170px;z-index:500;overflow:hidden">
+      <div id="sr-profile-menu-name" style="padding:10px 14px;font-size:14px;font-weight:700;color:var(--text);border-bottom:1px solid var(--border)"></div>
+      <button onclick="srLogout()" style="width:100%;text-align:left;background:none;border:none;padding:10px 14px;font-family:'Hind Siliguri',sans-serif;font-size:14px;color:var(--red);cursor:pointer;display:flex;align-items:center;gap:6px">🔒 লগআউট</button>
+    </div>
+  </div>
 </div>
 <div id="main">
   <!-- ORDER ENTRY -->
@@ -347,21 +357,87 @@ body{background:var(--bg);color:var(--text);font-family:'Hind Siliguri',sans-ser
 <style id="slip-print-style"></style>
 
 <script>
+// ══════════════════════════════════════════
+//  বাংলা→ইংরেজি ডিজিট কনভার্টার ও ইনপুট স্যানিটাইজার
+//  সব input[type=number]/[type=tel] ফিল্ডে কাজ করে
+//  নতুন তৈরি হওয়া মোডাল ইনপুটেও কাজ করবে (event delegation)
+// ══════════════════════════════════════════
+(function(){
+  var BN_DIGITS = '০১২৩৪৫৬৭৮৯';
+  function bnToEn(str){
+    return String(str).replace(/[০-৯]/g, function(ch){ return BN_DIGITS.indexOf(ch); });
+  }
+  function sanitizeNumber(str){
+    str = bnToEn(str);
+    var neg = str.charAt(0) === '-';
+    str = str.replace(/[^0-9.]/g, '');
+    var parts = str.split('.');
+    if (parts.length > 2) str = parts[0] + '.' + parts.slice(1).join('');
+    if (neg) str = '-' + str;
+    return str;
+  }
+  function sanitizeTel(str){
+    str = bnToEn(str);
+    return str.replace(/[^0-9+\-\s()]/g, '');
+  }
+  var PHONE_ONLY_IDS = ['msearch'];
+
+  function handleInput(e){
+    var el = e.target;
+    if (!el || !el.tagName || el.tagName !== 'INPUT') return;
+    var type = (el.getAttribute('type')||'').toLowerCase();
+    var isPhoneOnlyId = PHONE_ONLY_IDS.indexOf(el.id) !== -1;
+    if (type !== 'number' && type !== 'tel' && !isPhoneOnlyId) return;
+
+    var pos = el.selectionStart;
+    var before = el.value;
+    var after;
+    if (type === 'number') after = sanitizeNumber(before);
+    else after = sanitizeTel(before);
+
+    if (after !== before) {
+      var diff = before.length - after.length;
+      el.value = after;
+      var newPos = Math.max(0, (pos||after.length) - diff);
+      try { el.setSelectionRange(newPos, newPos); } catch(e2){}
+    }
+  }
+
+  document.addEventListener('input', handleInput, true);
+  document.addEventListener('paste', function(e){
+    var el = e.target;
+    if (!el || !el.tagName || el.tagName !== 'INPUT') return;
+    setTimeout(function(){ handleInput({target: el}); }, 0);
+  }, true);
+})();
+// ══════════════════════════════════════════ (end digit sanitizer)
+
 // ════ FIREBASE CONFIG — এখানে আপনার config বসান ════
 const firebaseConfig = {
-  apiKey:            "AIzaSyDKc0n5OHQwJvyw0eN1xZtPvoYjbtbRRWE",
-  authDomain:        "dealership-manager.firebaseapp.com",
-  databaseURL:       "https://dealership-manager-default-rtdb.firebaseio.com",
-  projectId:         "dealership-manager",
-  storageBucket:     "dealership-manager.firebasestorage.app",
-  messagingSenderId: "416895402018",
-  appId:             "1:416895402018:web:89afbedb035d1952ce8a7b",
+  apiKey:            "AIzaSyCP2RmMbWM43H6w_7_6YKtD5bXkoCoKTTw",
+  authDomain:        "dealer-vai.firebaseapp.com",
+  databaseURL:       "https://dealer-vai-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "dealer-vai",
+  storageBucket:     "dealer-vai.firebasestorage.app",
+  messagingSenderId: "305454773026",
+  appId:             "1:305454773026:web:901bd16600518cf4172b7b",
   measurementId:     "G-NXLGYYWF00"
 };
 // ════════════════════════════════════════════════════
 
+// ════════════════════════════════════════════════════
+//  MULTI-TENANT (BUSINESS) ID — লগইন করা SR এর sr_links থেকে সেট হয়
+// ════════════════════════════════════════════════════
+let BIZ_ID = null;
+function bizRef(path) { return FDB.ref('businesses/' + BIZ_ID + '/' + path); }
+function mobileToAuthEmail(mobile) {
+  const digits = String(mobile||'').replace(/[^0-9]/g,'');
+  return digits + '@dealervai.local';
+}
+
 // Dynamic Firebase SDK Loader — Sequential loading
 let FDB = null;
+let FAUTH = null;
 let _fbCallbackDone = false;
 function _safeCB(callback, val) {
   if (_fbCallbackDone) return;
@@ -375,33 +451,40 @@ function loadFirebaseSDK(callback) {
     try {
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
       FDB = firebase.database();
+      if (firebase.auth) FAUTH = firebase.auth();
       _safeCB(callback, true);
     } catch(e) { _safeCB(callback, false); }
     return;
   }
-  // Load app script first, then database script sequentially
+  // app স্ক্রিপ্ট আগে লোড হবে, তারপর database ও auth — একসাথে (parallel) লোড হবে গতি বাড়ানোর জন্য
   var s1 = document.createElement('script');
   s1.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
   s1.onerror = function() { _safeCB(callback, false); };
   s1.onload = function() {
-    var s2 = document.createElement('script');
-    s2.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
-    s2.onerror = function() { _safeCB(callback, false); };
-    s2.onload = function() {
+    var dbLoaded = false, authLoaded = false, authOk = false;
+    function tryFinish() {
+      if (!dbLoaded) return; // database ছাড়া অ্যাপ চলবে না
       try {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         FDB = firebase.database();
+        if (authOk) FAUTH = firebase.auth();
         _safeCB(callback, true);
-      } catch(e) {
-        console.warn('Firebase init error:', e);
-        _safeCB(callback, false);
-      }
-    };
+      } catch(e) { console.warn('Firebase init error:', e); _safeCB(callback, false); }
+    }
+    var s2 = document.createElement('script');
+    s2.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
+    s2.onerror = function() { _safeCB(callback, false); };
+    s2.onload = function() { dbLoaded = true; if (authLoaded) tryFinish(); };
+    var s3 = document.createElement('script');
+    s3.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js';
+    s3.onload = function() { authLoaded = true; authOk = true; if (dbLoaded) tryFinish(); };
+    s3.onerror = function() { authLoaded = true; authOk = false; if (dbLoaded) tryFinish(); };
     document.head.appendChild(s2);
+    document.head.appendChild(s3);
   };
   document.head.appendChild(s1);
-  // Timeout fallback — 8 seconds
-  setTimeout(function() { _safeCB(callback, false); }, 3000);
+  // Timeout fallback — ধীরগতির নেটওয়ার্কেও যেন ভুলভাবে "ইন্টারনেট নেই" এরর না দেখায়, তাই ১২ সেকেন্ড সময় দেওয়া হচ্ছে
+  setTimeout(function() { _safeCB(callback, false); }, 12000);
 }
 
 // ── CACHE (offline backup) ──
@@ -417,7 +500,7 @@ const DB={
   get:k=>C.get(k)||[],
   set:(k,data)=>{
     C.set(k,data);
-    if(isOnline&&FDB)FDB.ref('data/'+k).set(data).catch(e=>console.warn(e));
+    if(isOnline&&FDB&&BIZ_ID)bizRef('data/'+k).set(data).catch(e=>console.warn(e));
     else pendingWrites[k]=data;
   },
   nextId:k=>{const a=DB.get(k);return a.length?Math.max(...a.map(x=>x.id||0))+1:1;}
@@ -427,7 +510,7 @@ const DB={
 function saveLockedPrice(shopId,prodId,price){
   const key='lp_'+shopId+'_'+prodId;
   const store=C.get('lp')||{};store[key]=price;C.set('lp',store);
-  if(isOnline&&FDB)FDB.ref('lp/'+key).set(price).catch(e=>{});
+  if(isOnline&&FDB&&BIZ_ID)bizRef('lp/'+key).set(price).catch(e=>{});
 }
 function getLockedPrice(shopId,prodId){
   const store=C.get('lp')||{};return store['lp_'+shopId+'_'+prodId]||null;
@@ -452,45 +535,72 @@ function connStatus(online){
 }
 
 // ── AUTH ──
-const SR_SESS='dm_sr_session';
 let loggedSrId=null,loggedSrName='';
 
 function doLogin(){
-  const srId=parseInt(v('login-sr')),pass=document.getElementById('login-pass').value;
-
-  function checkPass(){
-    const individualKey='dm_sr_pass_'+srId;
-    const individualPass=localStorage.getItem(individualKey);
-    const globalPass=localStorage.getItem('dm_sr_pass')||'sr1234';
-    const validPass=individualPass||globalPass;
-    if(!srId||pass!==validPass){document.getElementById('lerr').style.display='block';return;}
-    const sr=DB.get('srs').find(s=>s.id===srId);
-    if(!sr){document.getElementById('lerr').style.display='block';return;}
-    sessionStorage.setItem(SR_SESS,JSON.stringify({id:srId,name:sr.name}));
-    showApp(srId,sr.name);
+  const mobile=v('login-mobile').trim();
+  const pass=document.getElementById('login-pass').value;
+  document.getElementById('lerr').style.display='none';
+  if(!mobile||!pass){document.getElementById('lerr').style.display='block';return;}
+  const btn=document.getElementById('login-btn');
+  if(!FAUTH){
+    if(!navigator.onLine){ toast('ইন্টারনেট সংযোগ নেই, লগইন করতে অনলাইনে আসুন',false); return; }
+    // ইন্টারনেট আছে কিন্তু ফায়ারবেজ এখনো লোড হয়নি — আবার চেষ্টা করি
+    if(btn){btn.disabled=true;btn.textContent='⏳ লোড হচ্ছে...';}
+    loadFirebaseSDK(function(ok){
+      if(btn){btn.disabled=false;btn.textContent='📋 লগইন করুন';}
+      if(!ok||!FAUTH){ toast('লোড হতে সমস্যা হচ্ছে, একটু পর আবার চেষ্টা করুন',false); return; }
+      doLogin();
+    });
+    return;
   }
-
-  // নতুন ডিভাইসে localStorage খালি থাকলে Firebase থেকে সরাসরি নিয়ে check কর
-  if(FDB && !localStorage.getItem('dm_sr_pass')){
-    FDB.ref('config/passes').once('value').then(ps=>{
-      const pd=ps.val()||{};
-      if(pd.sr)localStorage.setItem('dm_sr_pass',pd.sr);
-      Object.keys(pd).forEach(k=>{ if(k.startsWith('sr_'))localStorage.setItem('dm_'+k,pd[k]); });
-      checkPass();
-    }).catch(()=>checkPass());
-  } else {
-    checkPass();
-  }
+  if(btn){btn.disabled=true;btn.textContent='⏳ লগইন হচ্ছে...';}
+  FAUTH.signInWithEmailAndPassword(mobileToAuthEmail(mobile), pass)
+    .catch(err=>{
+      let msg='❌ মোবাইল বা পাসওয়ার্ড ভুল!';
+      if(err && (err.code==='auth/too-many-requests')) msg='অনেকবার ভুল চেষ্টা হয়েছে, একটু পর চেষ্টা করুন';
+      const el=document.getElementById('lerr'); if(el){el.textContent=msg;el.style.display='block';}
+      if(btn){btn.disabled=false;btn.textContent='📋 লগইন করুন';}
+    });
+  // সফল হলে onAuthStateChanged (নিচে INIT ব্লকে) বাকি কাজ করবে
 }
-function srLogout(){if(confirm('লগআউট করবেন?')){_stopTracking();sessionStorage.removeItem(SR_SESS);location.reload();}}
+function srLogout(){if(confirm('লগআউট করবেন?')){_stopTracking();if(FAUTH)FAUTH.signOut();else location.reload();}}
+
+function toggleSrProfileMenu(e){
+  if(e) e.stopPropagation();
+  const m=document.getElementById('sr-profile-menu');
+  if(!m)return;
+  m.style.display = m.style.display==='block' ? 'none' : 'block';
+}
+document.addEventListener('click', function(e){
+  const menu=document.getElementById('sr-profile-menu');
+  const wrap=document.getElementById('sr-profile-wrap');
+  if(menu && menu.style.display==='block' && wrap && !wrap.contains(e.target)){
+    menu.style.display='none';
+  }
+});
 
 function showApp(srId,srName){
   loggedSrId=srId;loggedSrName=srName;
   document.getElementById('login-screen').style.display='none';
   document.getElementById('topbar').style.display='flex';
   document.getElementById('main').style.display='block';
-  document.getElementById('sr-badge').textContent='👤 '+srName;
   document.getElementById('today-lbl').textContent=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+  // ── প্রোফাইল অ্যাভাটার সেটআপ ──
+  const sr = (DB.get('srs')||[]).find(s=>s.id===srId) || {};
+  document.getElementById('sr-profile-name').textContent = srName;
+  document.getElementById('sr-profile-menu-name').textContent = srName;
+  const avImg = document.getElementById('sr-avatar-img');
+  const avInit = document.getElementById('sr-avatar-initial');
+  if (sr.photo) {
+    avImg.src = sr.photo;
+    avImg.style.display = 'block';
+    avInit.style.display = 'none';
+  } else {
+    avImg.style.display = 'none';
+    avInit.style.display = 'block';
+    avInit.textContent = (srName||'?').trim().charAt(0);
+  }
   set('o-sr',srId);document.getElementById('o-sr-disp').value=srName;
   set('o-date',today());
   const ms=today().substring(0,8)+'01';
@@ -498,37 +608,20 @@ function showApp(srId,srName){
   set('ops-from',today());set('ops-to',today());
   populateShops();renderOrders();
   buildDateOptions('ops-from-sel',today());buildDateOptions('ops-to-sel',today());renderSummary();
-  // Real-time listeners (only if Firebase loaded)
-  if(FDB){
-    FDB.ref('data/orders').on('value',snap=>{
-      const raw=snap.val();const arr=raw?(Array.isArray(raw)?raw:Object.values(raw)):[];
-      C.set('orders',arr);renderOrders();buildDateOptions('ops-from-sel',v('ops-from'));buildDateOptions('ops-to-sel',v('ops-to'));renderSummary();
-    });
-    FDB.ref('data/deliveries').on('value',snap=>{
-      const raw=snap.val();const arr=raw?(Array.isArray(raw)?raw:Object.values(raw)):[];
-      C.set('deliveries',arr);renderOrders();renderSummary();
-    });
-    FDB.ref('data/products').on('value',snap=>{
-      const raw=snap.val();const arr=raw?(Array.isArray(raw)?raw:Object.values(raw)):[];
-      C.set('products',arr);const sid=parseInt(v('o-shop'));if(sid)buildBulkTable(sid);
-    });
-    FDB.ref('data/shops').on('value',snap=>{
-      const raw=snap.val();const arr=raw?(Array.isArray(raw)?raw:Object.values(raw)):[];
-      C.set('shops',arr);populateShops();
-    });
-  }
   // ── অটো ট্র্যাকিং শুরু ──
   _autoStartTracking();
 }
 
 
-function populateLoginSRs(){
-  var sel=document.getElementById('login-sr');
-  if(!sel)return;
-  var srs=DB.get('srs')||[];
-  sel.innerHTML='<option value="">— SR বেছে নিন —</option>'+
-    srs.map(function(s){return '<option value="'+s.id+'">'+s.name+'</option>';}).join('');
+// কোড অনুযায়ী natural/numeric sort
+function sortByCode(arr) {
+  return arr.slice().sort((a, b) => {
+    const ca = String(a.code || ''), cb = String(b.code || '');
+    return ca.localeCompare(cb, undefined, { numeric: true, sensitivity: 'base' });
+  });
 }
+
+
 function populateShops(){
   const shops=DB.get('shops');
   document.getElementById('o-shop').innerHTML='<option value="">— বেছে নিন —</option>'+
@@ -1517,64 +1610,107 @@ function saveQS(){
   toast('🏬 "'+name+'" যোগ হয়েছে!');
 }
 
-// ── FIREBASE LOAD ALL ──
+// ── FIREBASE LOAD ALL + REAL-TIME LISTENERS ──
+let _srDataListenerOn = false;
 function loadAll(cb){
-  if(!FDB){cb();return;}
+  if(!FDB||!BIZ_ID){cb();return;}
   var _cbDone=false;
   function done(){if(_cbDone)return;_cbDone=true;cb();}
-  // Safety timeout — if Firebase hangs (e.g. content:// protocol), proceed after 4s
   var _t=setTimeout(function(){console.warn('loadAll timeout, using cache');done();},4000);
-  FDB.ref('data').once('value').then(snap=>{
+
+  if(_srDataListenerOn){done();return;}
+  _srDataListenerOn=true;
+
+  // .on() = প্রতিবার ডেটা বদলালে আপডেট (real-time), .once() এর বদলে
+  bizRef('data').on('value', snap=>{
     clearTimeout(_t);
     const data=snap.val()||{};
     ['products','orders','deliveries','shops','srs','expenses','purchases','payments'].forEach(t=>{
       const raw=data[t];const arr=raw?(Array.isArray(raw)?raw:Object.values(raw)):[];C.set(t,arr);
     });
-    FDB.ref('.info/connected').on('value',s=>{
-      isOnline=s.val()===true;connStatus(isOnline);
-      if(isOnline){Object.entries(pendingWrites).forEach(([k,d])=>FDB.ref('data/'+k).set(d).catch(e=>{}));for(const k in pendingWrites)delete pendingWrites[k];}
-    });
-    // sync passwords — must await before lp/done so login works on fresh device
-    FDB.ref('config/passes').once('value').then(ps=>{
-      const pd=ps.val()||{};
-      if(pd.sr)localStorage.setItem('dm_sr_pass',pd.sr);
-      Object.keys(pd).forEach(k=>{ if(k.startsWith('sr_'))localStorage.setItem('dm_'+k,pd[k]); });
-      // sync locked prices after passwords
-      FDB.ref('lp').once('value').then(lps=>{const d=lps.val()||{};C.set('lp',d);done();}).catch(()=>{done();});
-    }).catch(()=>{
-      FDB.ref('lp').once('value').then(lps=>{const d=lps.val()||{};C.set('lp',d);done();}).catch(()=>{done();});
-    });
-  }).catch(err=>{
+    if(!_cbDone){
+      // প্রথমবার — lp লোড করে তারপর boot
+      bizRef('lp').once('value').then(lps=>{const d=lps.val()||{};C.set('lp',d);done();}).catch(()=>{done();});
+      // lp ও real-time রাখো
+      bizRef('lp').on('value', lps=>{C.set('lp',lps.val()||{});});
+    } else {
+      // পরবর্তী আপডেট — UI রিফ্রেশ
+      populateShops();
+      renderOrders();
+      renderSummary();
+      if(parseInt(v('o-shop'))) shopChanged();
+    }
+  }, err=>{
     clearTimeout(_t);
     console.warn('Firebase error, using cache:',err);
-    FDB.ref('.info/connected').on('value',s=>{isOnline=s.val()===true;connStatus(isOnline);});
     done();
+  });
+
+  FDB.ref('.info/connected').on('value',s=>{
+    isOnline=s.val()===true;connStatus(isOnline);
+    if(isOnline){Object.entries(pendingWrites).forEach(([k,d])=>bizRef('data/'+k).set(d).catch(e=>{}));for(const k in pendingWrites)delete pendingWrites[k];}
+  });
+}
+
+// ── LOGIN লিংক — sr_links/{uid} থেকে BIZ_ID + srId বের করা ──
+// অফলাইনে আবার লগইন করতে হলেও যেন কাজ করে, তাই lookup ক্যাশ করে রাখি (uid ধরে)
+function _saveLinkCache(uid, link){ try{ localStorage.setItem('sr_link_'+uid, JSON.stringify(link)); }catch(e){} }
+function _getLinkCache(uid){ try{ return JSON.parse(localStorage.getItem('sr_link_'+uid)||'null'); }catch(e){ return null; } }
+
+function _resolveSrLink(user, onOk, onFail){
+  FDB.ref('sr_links/'+user.uid).once('value').then(snap=>{
+    const link=snap.val();
+    if(!link||link.role!=='sr'){ onFail('❌ এই অ্যাকাউন্ট SR পোর্টালের জন্য নয়।'); return; }
+    _saveLinkCache(user.uid, link);
+    onOk(link);
+  }).catch(()=>{
+    const cached=_getLinkCache(user.uid);
+    if(cached&&cached.role==='sr'){ onOk(cached); }
+    else { onFail('লিংক যাচাই করা যায়নি, ইন্টারনেট চেক করুন'); }
   });
 }
 
 // ── INIT ──
 (function(){
-  // Firebase আগে লোড হবে, তারপর UI দেখাবে
-  loadFirebaseSDK(function(ok){
-    if(!ok){
-      // Firebase ব্যর্থ হলে cache থেকে UI দেখাও
+  function boot(ok, isRetry){
+    if(!ok||!FAUTH){
+      // নেটওয়ার্ক একটু ধীর হলে একবার নিজে থেকে আবার চেষ্টা করবে, ইউজারকে এরর দেখানোর আগে
+      if(!isRetry){ loadFirebaseSDK(function(ok2){ boot(ok2, true); }); return; }
       connStatus(false);
       document.getElementById('loading').style.display='none';
-      populateLoginSRs();
-      const saved=sessionStorage.getItem(SR_SESS);
-      if(saved){try{const s=JSON.parse(saved);showApp(s.id,s.name);}catch(e){sessionStorage.removeItem(SR_SESS);document.getElementById('login-screen').style.display='flex';}}
-      else document.getElementById('login-screen').style.display='flex';
+      document.getElementById('login-screen').style.display='flex';
+      const msg = navigator.onLine ? 'লোড হতে সমস্যা হচ্ছে, পেজ রিফ্রেশ করে আবার চেষ্টা করুন' : 'ফায়ারবেজ লোড ব্যর্থ — ইন্টারনেট চেক করুন';
+      toast(msg, false);
       return;
     }
-    loadAll(function(){
-      // Firebase ও সব data লোড শেষ — এখন UI দেখাও
-      document.getElementById('loading').style.display='none';
-      populateLoginSRs();
-      const saved=sessionStorage.getItem(SR_SESS);
-      if(saved){try{const s=JSON.parse(saved);showApp(s.id,s.name);}catch(e){sessionStorage.removeItem(SR_SESS);document.getElementById('login-screen').style.display='flex';}}
-      else document.getElementById('login-screen').style.display='flex';
+    FAUTH.onAuthStateChanged(function(user){
+      if(!user){
+        BIZ_ID=null; loggedSrId=null; loggedSrName='';
+        document.getElementById('loading').style.display='none';
+        document.getElementById('topbar').style.display='none';
+        document.getElementById('main').style.display='none';
+        document.getElementById('login-screen').style.display='flex';
+        const btn=document.getElementById('login-btn'); if(btn){btn.disabled=false;btn.textContent='📋 লগইন করুন';}
+        return;
+      }
+      _resolveSrLink(user, function(link){
+        BIZ_ID=link.bizId;
+        loadAll(function(){
+          const sr=(DB.get('srs')||[]).find(s=>s.id===link.id);
+          loggedSrId=link.id; loggedSrName=sr?sr.name:'';
+          document.getElementById('loading').style.display='none';
+          showApp(link.id, loggedSrName);
+        });
+      }, function(msg){
+        document.getElementById('loading').style.display='none';
+        document.getElementById('login-screen').style.display='flex';
+        const errEl=document.getElementById('lerr');
+        if(errEl){errEl.textContent=msg;errEl.style.display='block';}
+        FAUTH.signOut().catch(()=>{});
+      });
     });
-  });
+  }
+  loadFirebaseSDK(function(ok){ boot(ok, false); });
 })();
 </script>
 
@@ -1652,7 +1788,7 @@ document.addEventListener('click', function(e) {
 let _trackTimer = null;
 
 function _autoStartTracking() {
-  if (!navigator.geolocation || !FDB) return;
+  if (!navigator.geolocation || !FDB || !BIZ_ID) return;
   _sendLocation(); // সাথে সাথে একবার
   _trackTimer = setInterval(_sendLocation, 2 * 60 * 1000); // প্রতি ২ মিনিটে
 }
@@ -1660,16 +1796,16 @@ function _autoStartTracking() {
 function _stopTracking() {
   clearInterval(_trackTimer);
   _trackTimer = null;
-  if (FDB && loggedSrId) {
-    FDB.ref('tracking/' + loggedSrId).update({ online: false, updatedAt: Date.now() }).catch(()=>{});
+  if (FDB && BIZ_ID && loggedSrId) {
+    bizRef('tracking/' + loggedSrId).update({ online: false, updatedAt: Date.now() }).catch(()=>{});
   }
 }
 
 function _sendLocation() {
-  if (!loggedSrId || !FDB) return;
+  if (!loggedSrId || !FDB || !BIZ_ID) return;
   navigator.geolocation.getCurrentPosition(
     function(pos) {
-      FDB.ref('tracking/' + loggedSrId).set({
+      bizRef('tracking/' + loggedSrId).set({
         srId: loggedSrId,
         srName: loggedSrName,
         lat: pos.coords.latitude,
